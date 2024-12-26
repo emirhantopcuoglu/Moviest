@@ -30,7 +30,7 @@ namespace Moviest.Controllers
             try
             {
                 var movies = await ExecuteServiceCall(() => _movieService.GetPopularMovies(page));
-                
+
                 if (movies?.Movies == null || !movies.Movies.Any())
                 {
                     return View(new List<MovieResponse>());
@@ -44,12 +44,40 @@ namespace Moviest.Controllers
             }
         }
 
-        public async Task<ActionResult> Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
             try
             {
                 var movieDetails = await ExecuteServiceCall(() => _movieService.GetMovieDetails(id));
                 return View(movieDetails);
+            }
+            catch (Exception ex)
+            {
+                return View("Error", ex.Message);
+            }
+        }
+
+        public async Task<IActionResult> Genres()
+        {
+            try
+            {
+                var genres = await ExecuteServiceCall(() => _movieService.GetGenres());
+                return View(genres);
+            }
+            catch (Exception ex)
+            {
+                return View("Error", ex.Message);
+            }
+        }
+
+        public async Task<IActionResult> MoviesByGenre(int id)
+        {
+            try
+            {
+                var moviesByGenre = await ExecuteServiceCall(() => _movieService.GetMoviesByGenre(id));
+                var genreName = await ExecuteServiceCall(() => _movieService.GetGenreNameById(id));
+                ViewData["GenreName"] = genreName;
+                return View(moviesByGenre.Movies);
             }
             catch (Exception ex)
             {

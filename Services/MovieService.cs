@@ -48,8 +48,6 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"movie/popular?api_key={apiKey}&language=tr-TR&page={page}");
 
-            HandleErrorMessage(response);
-
             var json = HandleErrorMessage(response);
 
             return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
@@ -58,7 +56,6 @@ namespace Moviest.Services
         public async Task<MovieDetails> GetMovieDetails(int id)
         {
             var response = await _httpClient.GetAsync($"movie/{id}?api_key={apiKey}&language=tr-TR");
-            HandleErrorMessage(response);
 
             var json = HandleErrorMessage(response);
 
@@ -68,7 +65,6 @@ namespace Moviest.Services
         public async Task<MovieResponse> GetMoviesByGenre(int genreId)
         {
             var response = await _httpClient.GetAsync($"discover/movie?api_key={apiKey}&language=tr-TR&with_genres={genreId}");
-            HandleErrorMessage(response);
 
             var json = HandleErrorMessage(response);
 
@@ -83,6 +79,19 @@ namespace Moviest.Services
             var json = HandleErrorMessage(response);
 
             return JsonSerializer.Deserialize<GenreListResponse>(json, _jsonOptions);
+        }
+
+        public async Task<string> GetGenreNameById(int id)
+        {
+            var response = await _httpClient.GetAsync($"genre/movie/list?api_key={apiKey}&language=tr-TR");
+            
+            var json = HandleErrorMessage(response);
+            
+            var genreListResponse = JsonSerializer.Deserialize<GenreListResponse>(json, _jsonOptions);
+            
+            var genre = genreListResponse?.Genres?.FirstOrDefault(g => g.Id == id);
+
+            return genre?.Name ?? "Bilinmeyen Tür";
         }
 
         public async Task<MovieResponse> SearchMovies(string query)
