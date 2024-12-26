@@ -36,6 +36,8 @@ namespace Moviest.Controllers
                     return View(new List<MovieResponse>());
                 }
 
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = movies.TotalPages;
                 return View(movies.Movies);
             }
             catch (Exception ex)
@@ -70,13 +72,15 @@ namespace Moviest.Controllers
             }
         }
 
-        public async Task<IActionResult> MoviesByGenre(int id)
+        public async Task<IActionResult> MoviesByGenre(int id, int page = 1)
         {
             try
             {
-                var moviesByGenre = await ExecuteServiceCall(() => _movieService.GetMoviesByGenre(id));
+                var moviesByGenre = await ExecuteServiceCall(() => _movieService.GetMoviesByGenre(id, page));
                 var genreName = await ExecuteServiceCall(() => _movieService.GetGenreNameById(id));
                 ViewData["GenreName"] = genreName;
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = moviesByGenre.TotalPages;
                 return View(moviesByGenre.Movies);
             }
             catch (Exception ex)

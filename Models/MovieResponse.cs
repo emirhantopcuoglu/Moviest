@@ -9,6 +9,8 @@ namespace Moviest.Models
         
         [JsonPropertyName("results")]
         public List<Movie> Movies { get; set; }
+
+        [JsonPropertyName("total_pages")]
         public int TotalPages { get; set; }
         public int TotalMovies { get; set; }
 
