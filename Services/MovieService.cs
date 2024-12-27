@@ -94,10 +94,9 @@ namespace Moviest.Services
             return genre?.Name ?? "Bilinmeyen Tür";
         }
 
-        public async Task<MovieResponse> SearchMovies(string query)
+        public async Task<MovieResponse> SearchMovies(string query, int page)
         {
-            var response = await _httpClient.GetAsync($"search/movie?api_key={apiKey}&language=tr-TR&query={Uri.EscapeDataString(query)}");
-            HandleErrorMessage(response);
+            var response = await _httpClient.GetAsync($"search/movie?api_key={apiKey}&language=tr-TR&query={Uri.EscapeDataString(query)}&page={page}");
 
             var json = HandleErrorMessage(response);
 

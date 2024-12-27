@@ -88,6 +88,17 @@ namespace Moviest.Controllers
                 return View("Error", ex.Message);
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Search(string query, int page = 1)
+        {
+            var movieResponse = await ExecuteServiceCall(() => _movieService.SearchMovies(query, page));
+            ViewBag.Query = query;
+            ViewBag.CurrentPage = movieResponse.Page;
+            ViewBag.TotalPages = movieResponse.TotalPages;
+            return View(movieResponse.Movies);
+        }
+        
     }
 }
 

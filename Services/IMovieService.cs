@@ -8,6 +8,6 @@ namespace Moviest.Services
         Task<MovieDetails> GetMovieDetails(int id);
         Task<MovieResponse> GetMoviesByGenre(int genreId, int page = 1);
         Task<GenreListResponse> GetGenres();
-        Task<MovieResponse> SearchMovies(string query);
+        Task<MovieResponse> SearchMovies(string query, int page);
     }
 }

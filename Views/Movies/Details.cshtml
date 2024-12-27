@@ -37,18 +37,21 @@
 
                     <div class="mb-3">
                         <h6 class="fw-bold text-muted">Tür</h6>
-                        <p class="fs-5">
+                        <div>
                             @if (Model.Genres != null && Model.Genres.Any())
                             {
-                                @string.Join(", ", Model.Genres.Select(g => g.Name))
+                                foreach (var genre in Model.Genres)
+                                {
+                                    <span class="genre-tag">@genre.Name</span>
+                                }
                             }
                             else
                             {
                                 <span>-</span>
                             }
-                        </p>
+                        </div>
                     </div>
-
+                    
                     <div class="mt-4">
                         <h4 class="fw-bold">Film Hakkında</h4>
                         <p class="text-muted fs-6">@Model.Overview</p>

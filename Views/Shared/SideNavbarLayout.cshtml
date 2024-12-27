@@ -16,7 +16,17 @@
             </div>
 
             <div class="search-bar px-3 mb-4">
-                <input type="text" class="form-control rounded-pill" placeholder="Film bul">
+                <form asp-controller="Movies" asp-action="Search" method="get" class="d-flex">
+                    <input 
+                        type="text" 
+                        name="query" 
+                        class="form-control search-input" 
+                        placeholder="Film ara..." 
+                        required>
+                    <button type="submit" class="btn search-button">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
             </div>
 
             <ul class="nav flex-column px-3">
