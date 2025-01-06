@@ -51,7 +51,7 @@
                             }
                         </div>
                     </div>
-                    
+
                     <div class="mt-4">
                         <h4 class="fw-bold">Film Hakkında</h4>
                         <p class="text-muted fs-6">@Model.Overview</p>
@@ -59,6 +59,35 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="row mt-5">
+        <h4 class="fw-bold mb-3">Fragmanlar</h4>
+        @if (Model.Videos != null && Model.Videos.Any())
+        {
+            <div class="col-12">
+                <div class="row g-4">
+                    @foreach (var video in Model.Videos)
+                    {
+                        <div class="col-md-6">
+                            <div class="ratio ratio-16x9 shadow-sm rounded-4">
+                                <iframe 
+                                    src="https://www.youtube.com/embed/@video.Key" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                            <p class="mt-2 text-center fw-bold">@video.Name</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <p class="text-muted">Bu film için fragman bulunamadı.</p>
+        }
     </div>
 </div>
 

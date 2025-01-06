@@ -51,6 +51,11 @@ namespace Moviest.Controllers
             try
             {
                 var movieDetails = await ExecuteServiceCall(() => _movieService.GetMovieDetails(id));
+
+                var trailers = await ExecuteServiceCall(() => _movieService.GetTrailer(id));
+
+                movieDetails.Videos = trailers;
+
                 return View(movieDetails);
             }
             catch (Exception ex)
@@ -98,7 +103,6 @@ namespace Moviest.Controllers
             ViewBag.TotalPages = movieResponse.TotalPages;
             return View(movieResponse.Movies);
         }
-        
     }
 }
 

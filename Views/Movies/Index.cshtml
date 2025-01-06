@@ -9,11 +9,11 @@
 
     <div class="d-flex justify-content-between mb-3">
         <a href="@Url.Action("Index", "Movies" , new { page=(ViewBag.CurrentPage - 1) })"
-            class="btn btn-primary @(ViewBag.CurrentPage <= 1 ? " disabled" : "" )">
+            class="btn btn-warning @(ViewBag.CurrentPage <= 1 ? " disabled" : "" )">
             &larr; Önceki
         </a>
         <a href="@Url.Action("Index", "Movies" , new { page=(ViewBag.CurrentPage + 1) })"
-            class="btn btn-primary @(ViewBag.CurrentPage >= ViewBag.TotalPages ? " disabled" : "" )">
+            class="btn btn-warning @(ViewBag.CurrentPage >= ViewBag.TotalPages ? " disabled" : "" )">
             Sonraki &rarr;
         </a>
     </div>
@@ -60,11 +60,11 @@
 
     <div class="d-flex justify-content-between mt-3">
         <a href="@Url.Action("Index", "Movies" , new { page=(ViewBag.CurrentPage - 1) })"
-            class="btn btn-primary @(ViewBag.CurrentPage <= 1 ? " disabled" : "" )">
+            class="btn btn-warning @(ViewBag.CurrentPage <= 1 ? " disabled" : "" )">
             &larr; Önceki
         </a>
         <a href="@Url.Action("Index", "Movies" , new { page=(ViewBag.CurrentPage + 1) })"
-            class="btn btn-primary @(ViewBag.CurrentPage >= ViewBag.TotalPages ? " disabled" : "" )">
+            class="btn btn-warning @(ViewBag.CurrentPage >= ViewBag.TotalPages ? " disabled" : "" )">
             Sonraki &rarr;
         </a>
     </div>

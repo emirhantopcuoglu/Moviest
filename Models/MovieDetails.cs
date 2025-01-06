@@ -16,5 +16,6 @@ namespace Moviest.Models
         [JsonPropertyName("vote_average")]
         public double VoteAverage { get; set; }
         public List<Genre> Genres { get; set; }
+        public List<Video> Videos { get; set; } = new List<Video>();
     }
 }

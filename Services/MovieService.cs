@@ -84,11 +84,11 @@ namespace Moviest.Services
         public async Task<string> GetGenreNameById(int id)
         {
             var response = await _httpClient.GetAsync($"genre/movie/list?api_key={apiKey}&language=tr-TR");
-            
+
             var json = HandleErrorMessage(response);
-            
+
             var genreListResponse = JsonSerializer.Deserialize<GenreListResponse>(json, _jsonOptions);
-            
+
             var genre = genreListResponse?.Genres?.FirstOrDefault(g => g.Id == id);
 
             return genre?.Name ?? "Bilinmeyen Tür";
@@ -101,6 +101,14 @@ namespace Moviest.Services
             var json = HandleErrorMessage(response);
 
             return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
+        }
+
+        public async Task<List<Video>> GetTrailer(int movieId)
+        {
+            var response = await _httpClient.GetAsync($"movie/{movieId}/videos?api_key={apiKey}");
+            var json = HandleErrorMessage(response);
+            var videoResponse = JsonSerializer.Deserialize<VideoResponse>(json, _jsonOptions);
+            return videoResponse?.Results?.Where(v => v.Type == "Trailer" && v.Site == "YouTube").ToList();
         }
     }
 }
