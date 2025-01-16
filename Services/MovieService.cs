@@ -110,5 +110,17 @@ namespace Moviest.Services
             var videoResponse = JsonSerializer.Deserialize<VideoResponse>(json, _jsonOptions);
             return videoResponse?.Results?.Where(v => v.Type == "Trailer" && v.Site == "YouTube").ToList();
         }
+
+        public async Task<List<Movie>> GetSimilarMovies(int movieId, int page = 1)
+        {
+            var response = await _httpClient.GetAsync($"movie/{movieId}/similar?api_key={apiKey}&language=tr-TR&page={page}");
+
+            var json = HandleErrorMessage(response);
+
+            var similarMoviesResponse = JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
+
+            return similarMoviesResponse?.Movies ?? new List<Movie>();
+        }
+
     }
 }

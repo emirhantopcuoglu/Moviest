@@ -17,5 +17,6 @@ namespace Moviest.Models
         public double VoteAverage { get; set; }
         public List<Genre> Genres { get; set; }
         public List<Video> Videos { get; set; } = new List<Video>();
+        public List<Movie> SimilarMovies { get; set; }
     }
 }

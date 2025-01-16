@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Moviest.Models;
 using Moviest.Services;
@@ -51,16 +52,24 @@ namespace Moviest.Controllers
             try
             {
                 var movieDetails = await ExecuteServiceCall(() => _movieService.GetMovieDetails(id));
-
                 var trailers = await ExecuteServiceCall(() => _movieService.GetTrailer(id));
+                var similarMovies = await ExecuteServiceCall(() => _movieService.GetSimilarMovies(id));
 
                 movieDetails.Videos = trailers;
+                movieDetails.SimilarMovies = similarMovies;
 
                 return View(movieDetails);
             }
             catch (Exception ex)
             {
-                return View("Error", ex.Message);
+                var errorModel = new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                };
+
+                return View("Error", errorModel);
             }
         }
 

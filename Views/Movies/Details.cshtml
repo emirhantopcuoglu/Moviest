@@ -2,6 +2,7 @@
 @{
     Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
 }
+<link href="~/css/details.css" rel="stylesheet">
 <div class="container my-5">
     <h1 class="text-center mb-4 fw-bold">@Model.Title</h1>
 
@@ -91,6 +92,55 @@
     </div>
 </div>
 
+<div class="row mt-5">
+    <h4 class="fw-bold mb-3">Benzer Filmler</h4>
+    @if (Model.SimilarMovies != null && Model.SimilarMovies.Any())
+    {
+        <div class="position-relative">
+            <div id="similarMoviesCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    @for (int i = 0; i < Model.SimilarMovies.Count; i += 4) // 4 film bir satırda gösterilecek
+                    {
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <div class="row g-3">
+                                @foreach (var movie in Model.SimilarMovies.Skip(i).Take(4))
+                                {
+                                    <div class="col-md-3">
+                                        <div class="card border-0 shadow-sm rounded-4">
+                                            <img src="@(string.IsNullOrEmpty(movie.Poster) 
+                                                ? "https://via.placeholder.com/500x750?text=No+Image" 
+                                                : $"https://image.tmdb.org/t/p/w500{movie.Poster}")" 
+                                                class="card-img-top rounded-4" alt="@movie.Title">
+                                            <div class="card-body text-center">
+                                                <h6 class="card-title text-truncate">@movie.Title</h6>
+                                                <a href="@Url.Action("Details", "Movies" , new { id=movie.Id })"
+                                            class="btn btn-outline-primary btn-sm rounded-pill">Detaylar</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+                <button class="carousel-control-prev custom-carousel-control" type="button" data-bs-target="#similarMoviesCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Önceki</span>
+                </button>
+                <button class="carousel-control-next custom-carousel-control" type="button" data-bs-target="#similarMoviesCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Sonraki</span>
+                </button>
+            </div>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted">Benzer film bulunamadı.</p>
+    }
+</div>
+
+
 @functions {
     private string GetRatingClass(double vote)
     {
@@ -102,4 +152,4 @@
     }
 }
 
-<link href="/css/details.css" rel="stylesheet">
+

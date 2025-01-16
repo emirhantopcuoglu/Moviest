@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Moviest.Models;
 
 namespace Moviest.Services
@@ -10,5 +11,6 @@ namespace Moviest.Services
         Task<GenreListResponse> GetGenres();
         Task<MovieResponse> SearchMovies(string query, int page);
         Task<List<Video>> GetTrailer(int movieId);
+        Task<List<Movie>> GetSimilarMovies(int movieId, int page = 1);
     }
 }
