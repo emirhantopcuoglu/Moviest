@@ -18,5 +18,6 @@ namespace Moviest.Models
         public List<Genre> Genres { get; set; }
         public List<Video> Videos { get; set; } = new List<Video>();
         public List<Movie> SimilarMovies { get; set; }
+        public List<Cast> Cast { get; set; } = new List<Cast>();
     }
 }

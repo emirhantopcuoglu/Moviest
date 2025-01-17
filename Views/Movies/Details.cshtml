@@ -30,14 +30,23 @@
 
                     <div class="mb-3">
                         <span class="rating-tag @GetRatingClass(Model.VoteAverage)">
-                            <i class="bi bi-star-fill">
-                                @Model.VoteAverage.ToString("F1")
-                            </i>
+                                @if(Model.VoteAverage == null || Model.VoteAverage == 0)
+                                {
+                                    <i class="bi bi-star-fill">
+                                        -
+                                    </i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-star-fill">
+                                        @Model.VoteAverage.ToString("F1")
+                                    </i> 
+                                }  
                         </span>
                     </div>
 
                     <div class="mb-3">
-                        <h6 class="fw-bold text-muted">Tür</h6>
+                        <h4 class="fw-bold">Tür</h6>
                         <div>
                             @if (Model.Genres != null && Model.Genres.Any())
                             {
@@ -53,9 +62,35 @@
                         </div>
                     </div>
 
-                    <div class="mt-4">
+                    <div class="mb-3">
                         <h4 class="fw-bold">Film Hakkında</h4>
-                        <p class="text-muted fs-6">@Model.Overview</p>
+                        <div>
+                            @if (Model.Overview != null && Model.Overview.Any())
+                            {
+                                <p class="text-muted fs-6">@Model.Overview</p>
+                            }
+                            else
+                            {
+                                <span>Bu film hakkında bilgi bulunamadı.</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h4 class="fw-bold">Oyuncu Kadrosu</h6>
+                        <div>
+                            @if (Model.Cast != null && Model.Cast.Any())
+                            {
+                                foreach (var c in Model.Cast)
+                                {
+                                    <span class="cast-tag">@c.Name</span>
+                                }
+                            }
+                            else
+                            {
+                                <span>Oyuncu kadrosu hakkında bilgi bulunamadı.</span>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
@@ -87,7 +122,7 @@
         }
         else
         {
-            <p class="text-muted">Bu film için fragman bulunamadı.</p>
+            <span>Bu film için fragman bulunamadı.</span>
         }
     </div>
 </div>
@@ -148,6 +183,7 @@
         if (vote >= 7) return "rating-good";
         if (vote >= 5) return "rating-average";
         if (vote >= 4) return "rating-poor";
+        if (vote == 0) return "unknown";
         return "rating-bad";
     }
 }

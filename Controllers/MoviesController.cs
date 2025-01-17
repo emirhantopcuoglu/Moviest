@@ -43,7 +43,14 @@ namespace Moviest.Controllers
             }
             catch (Exception ex)
             {
-                return View("Error", ex.Message);
+                var errorModel = new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                };
+
+                return View("Error", errorModel);
             }
         }
 
@@ -54,9 +61,11 @@ namespace Moviest.Controllers
                 var movieDetails = await ExecuteServiceCall(() => _movieService.GetMovieDetails(id));
                 var trailers = await ExecuteServiceCall(() => _movieService.GetTrailer(id));
                 var similarMovies = await ExecuteServiceCall(() => _movieService.GetSimilarMovies(id));
+                var cast = await ExecuteServiceCall(() => _movieService.GetMovieCredits(id));
 
                 movieDetails.Videos = trailers;
                 movieDetails.SimilarMovies = similarMovies;
+                movieDetails.Cast = cast;
 
                 return View(movieDetails);
             }
@@ -82,7 +91,14 @@ namespace Moviest.Controllers
             }
             catch (Exception ex)
             {
-                return View("Error", ex.Message);
+                var errorModel = new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                };
+
+                return View("Error", errorModel);
             }
         }
 
@@ -99,7 +115,14 @@ namespace Moviest.Controllers
             }
             catch (Exception ex)
             {
-                return View("Error", ex.Message);
+                var errorModel = new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                };
+
+                return View("Error", errorModel);
             }
         }
 

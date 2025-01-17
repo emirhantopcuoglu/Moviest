@@ -62,6 +62,17 @@ namespace Moviest.Services
             return JsonSerializer.Deserialize<MovieDetails>(json, _jsonOptions);
         }
 
+        public async Task<List<Cast>> GetMovieCredits(int id)
+        {
+            var response = await _httpClient.GetAsync($"movie/{id}/credits?api_key={apiKey}&language=tr-TR");
+            
+            var json = HandleErrorMessage(response);
+
+            var creditsResponse = JsonSerializer.Deserialize<CreditsResponse>(json, _jsonOptions);
+
+            return creditsResponse?.Cast ?? new List<Cast>();
+        }
+
         public async Task<MovieResponse> GetMoviesByGenre(int genreId, int page = 1)
         {
             var response = await _httpClient.GetAsync($"discover/movie?api_key={apiKey}&language=tr-TR&with_genres={genreId}&page={page}");
