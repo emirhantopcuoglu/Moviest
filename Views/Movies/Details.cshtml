@@ -77,18 +77,37 @@
                     </div>
 
                     <div class="mt-4">
-                        <h4 class="fw-bold">Oyuncu Kadrosu</h6>
-                        <div>
+                        <h4 class="fw-bold">Oyuncu Kadrosu</h4>
+                        <div class="row g-3">
                             @if (Model.Cast != null && Model.Cast.Any())
                             {
-                                foreach (var c in Model.Cast)
+                                @foreach (var c in Model.Cast.Take(5)) // İlk 5 oyuncuyu göster
                                 {
-                                    <span class="cast-tag">@c.Name</span>
+                                    <div class="col-6 col-md-2 text-center">
+                                        <!-- Oyuncu Fotoğrafı -->
+                                        <img src="@(string.IsNullOrEmpty(c.ProfilePath) 
+                                            ? "https://via.placeholder.com/300x450?text=No+Image" 
+                                            : $"https://image.tmdb.org/t/p/w300{c.ProfilePath}")" 
+                                            class="img-fluid rounded-4 shadow-sm cast-image" alt="@c.Name">
+                                        
+                                        <!-- Oyuncu Adı (Sabit Genişlik) -->
+                                        <h6 class="mt-2">
+                                            <a href="@Url.Action("ActorDetails", "Movies", new { id = c.Id })" 
+                                               class="btn btn-warning btn-sm text-dark fw-bold rounded-pill cast-button">
+                                                @c.Name
+                                            </a>
+                                        </h6>
+                                        
+                                        <!-- Oyuncu Karakteri -->
+                                        <p class="text-muted small">(@c.Character)</p>
+                                    </div>
                                 }
                             }
                             else
                             {
-                                <span>Oyuncu kadrosu hakkında bilgi bulunamadı.</span>
+                                <div class="col-12">
+                                    <p class="text-muted">Oyuncu kadrosu hakkında bilgi bulunamadı.</p>
+                                </div>
                             }
                         </div>
                     </div>
@@ -174,7 +193,6 @@
         <p class="text-muted">Benzer film bulunamadı.</p>
     }
 </div>
-
 
 @functions {
     private string GetRatingClass(double vote)

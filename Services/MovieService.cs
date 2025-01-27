@@ -133,5 +133,25 @@ namespace Moviest.Services
             return similarMoviesResponse?.Movies ?? new List<Movie>();
         }
 
+        public async Task<ActorDetails> GetActorDetails(int actorId)
+        {
+            var response = await _httpClient.GetAsync($"person/{actorId}?api_key={apiKey}&language=tr-TR");
+
+            var json = HandleErrorMessage(response);
+
+            return JsonSerializer.Deserialize<ActorDetails>(json, _jsonOptions);
+        }
+
+        public async Task<List<Movie>> GetActorMovies(int actorId)
+        {
+            var response = await _httpClient.GetAsync($"person/{actorId}/movie_credits?api_key={apiKey}&language=tr-TR");
+
+            var json = HandleErrorMessage(response);
+
+            var actorCredits = JsonSerializer.Deserialize<ActorCreditsResponse>(json, _jsonOptions);
+
+            return actorCredits?.Cast ?? new List<Movie>();
+        }
+
     }
 }

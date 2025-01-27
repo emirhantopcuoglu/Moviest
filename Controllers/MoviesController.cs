@@ -82,6 +82,33 @@ namespace Moviest.Controllers
             }
         }
 
+        public async Task<IActionResult> ActorDetails(int id)
+        {
+            try
+            {
+                var actorDetails = await ExecuteServiceCall(() => _movieService.GetActorDetails(id));
+                var actorMovies = await ExecuteServiceCall(() => _movieService.GetActorMovies(id));
+
+                var actorViewModel = new ActorDetailsViewModel
+                {
+                    Actor = actorDetails,
+                    Movies = actorMovies
+                };
+                return View(actorViewModel);
+            }
+            catch (Exception ex)
+            {
+                var errorModel = new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                };
+
+                return View("Error", errorModel);
+            }
+        }
+
         public async Task<IActionResult> Genres()
         {
             try

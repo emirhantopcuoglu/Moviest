@@ -12,5 +12,8 @@ namespace Moviest.Services
         Task<MovieResponse> SearchMovies(string query, int page);
         Task<List<Video>> GetTrailer(int movieId);
         Task<List<Movie>> GetSimilarMovies(int movieId, int page = 1);
+        Task<List<Cast>> GetMovieCredits(int id);
+        Task<ActorDetails> GetActorDetails(int actorId);
+        Task<List<Movie>> GetActorMovies(int actorId);
     }
 }

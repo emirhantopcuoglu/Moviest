@@ -1,0 +1,91 @@
+@model ActorDetailsViewModel
+@{
+    Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
+}
+<link href="~/css/actorDetails.css" rel="stylesheet">
+<div class="container my-5">
+    <div class="row g-4 align-items-center">
+        <div class="col-md-4 text-center">
+            <img src="@(string.IsNullOrEmpty(Model.Actor.ProfilePath) 
+                ? "https://via.placeholder.com/300x450?text=No+Image" 
+                : $"https://image.tmdb.org/t/p/w300{Model.Actor.ProfilePath}")" 
+                class="img-fluid rounded-4 shadow-sm" alt="@Model.Actor.Name">
+        </div>
+        <div class="col-md-8">
+            <h1 class="fw-bold mb-3">@Model.Actor.Name</h1>
+            <p class="text-muted">@(!string.IsNullOrEmpty(Model.Actor.Biography) 
+                ? Model.Actor.Biography 
+                : "Bu aktör hakkında bilgi bulunamadı.")</p>
+            <ul class="list-unstyled">
+                <li><strong>Doğum Tarihi:</strong> @(string.IsNullOrEmpty(Model.Actor.Birthday) ? "-" : Model.Actor.Birthday)</li>
+                @if (!string.IsNullOrEmpty(Model.Actor.Deathday))
+                {
+                    <li><strong>Ölüm Tarihi:</strong> @Model.Actor.Deathday</li>
+                }
+                <li><strong>Doğum Yeri:</strong> @(string.IsNullOrEmpty(Model.Actor.PlaceOfBirth) ? "-" : Model.Actor.PlaceOfBirth)</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <h4 class="fw-bold mb-3">Yer Aldığı Filmler</h4>
+        <div class="row row-cols-2 row-cols-md-4 g-4">
+            @if (Model.Movies != null && Model.Movies.Any())
+            {
+                @foreach (var movie in Model.Movies)
+                {
+                    <div class="col-md-3">
+                        <div class="card h-100 shadow-lg rounded-lg border-0">
+        
+                            <img src="@(string.IsNullOrEmpty(movie.Poster) 
+                                    ? " https://via.placeholder.com/500x750?text=No+Image" :
+                                $"https://image.tmdb.org/t/p/w500{movie.Poster}")" class="card-img-top rounded-top"
+                                alt="@movie.Title">
+        
+                            <div class="card-body">
+                                <h5 class="card-title text-truncate">@movie.Title</h5>
+        
+                                <p class="card-text text-muted small mb-1">
+                                    <i class="bi bi-calendar"></i>
+                                    @(DateTime.TryParse(movie.ReleaseDate, out var parsedDate)
+                                    ? parsedDate.ToString("yyyy")
+                                    : "-")
+                                </p>
+                            </div>
+        
+                            <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
+        
+                                <span class="rating-tag @GetRatingClass(movie.VoteAverage)">
+                                    <i class="bi bi-star-fill">
+                                        @movie.VoteAverage.ToString("F1")
+                                    </i>
+                                </span>
+        
+                                <a href="@Url.Action("Details", "Movies" , new { id=movie.Id })"
+                                    class="btn btn-outline-warning btn-sm rounded-pill">Detaylar</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12">
+                    <p class="text-muted text-center">Bu aktörün yer aldığı film bilgisi bulunamadı.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetRatingClass(double vote)
+    {
+        if (vote >= 9) return "rating-high";
+        if (vote >= 7) return "rating-good";
+        if (vote >= 5) return "rating-average";
+        if (vote >= 4) return "rating-poor";
+        if (vote == 0) return "unknown";
+        return "rating-bad";
+    }
+}
