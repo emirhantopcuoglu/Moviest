@@ -6,6 +6,9 @@ namespace Moviest.Services
     public interface IMovieService
     {
         Task<MovieResponse> GetPopularMovies(int page = 1);
+        Task<MovieResponse> GetNowPlaying(int page = 1);
+        Task<MovieResponse> GetTopRatedMovies(int page = 1);
+        Task<MovieResponse> GetUpcomingMovies(int page = 1);
         Task<MovieDetails> GetMovieDetails(int id);
         Task<MovieResponse> GetMoviesByGenre(int genreId, int page = 1);
         Task<GenreListResponse> GetGenres();

@@ -54,6 +54,90 @@ namespace Moviest.Controllers
             }
         }
 
+        public async Task<IActionResult> NowPlaying(int page = 1)
+        {
+            try
+            {
+                var movies = await ExecuteServiceCall(() => _movieService.GetNowPlaying(page));
+
+                if (movies?.Movies == null || !movies.Movies.Any())
+                {
+                    return View(new List<MovieResponse>());
+                }
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = movies.TotalPages;
+                return View(movies.Movies);
+            }
+            catch (Exception ex)
+            {
+                var errorModel = new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                };
+
+                return View("Error", errorModel);
+            }
+        }
+
+        public async Task<IActionResult> TopRatedMovies(int page = 1)
+        {
+            try
+            {
+                var movies = await ExecuteServiceCall(() => _movieService.GetTopRatedMovies(page));
+
+                if (movies?.Movies == null || !movies.Movies.Any())
+                {
+                    return View(new List<MovieResponse>());
+                }
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = movies.TotalPages;
+                return View(movies.Movies);
+            }
+            catch (Exception ex)
+            {
+                var errorModel = new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                };
+
+                return View("Error", errorModel);
+            }
+        }
+
+        public async Task<IActionResult> UpcomingMovies(int page = 1)
+        {
+            try
+            {
+                var movies = await ExecuteServiceCall(() => _movieService.GetUpcomingMovies(page));
+
+                if (movies?.Movies == null || !movies.Movies.Any())
+                {
+                    return View(new List<MovieResponse>());
+                }
+
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = movies.TotalPages;
+                return View(movies.Movies);
+            }
+            catch (Exception ex)
+            {
+                var errorModel = new ErrorViewModel
+                {
+                    RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier,
+                    Message = ex.Message,
+                    StackTrace = ex.StackTrace
+                };
+
+                return View("Error", errorModel);
+            }
+        }
+
         public async Task<IActionResult> Details(int id)
         {
             try

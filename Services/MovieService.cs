@@ -53,6 +53,31 @@ namespace Moviest.Services
             return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
         }
 
+        public async Task<MovieResponse> GetNowPlaying(int page = 1)
+        {
+            var response = await _httpClient.GetAsync($"movie/now_playing?api_key={apiKey}&language=tr-TR&page={page}");
+
+            var json = HandleErrorMessage(response);
+
+            return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
+        }
+        public async Task<MovieResponse> GetTopRatedMovies(int page = 1)
+        {
+            var response = await _httpClient.GetAsync($"movie/top_rated?api_key={apiKey}&language=tr-TR&page={page}");
+
+            var json = HandleErrorMessage(response);
+
+            return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
+        }
+
+        public async Task<MovieResponse> GetUpcomingMovies(int page = 1)
+        {
+            var response = await _httpClient.GetAsync($"movie/upcoming?api_key={apiKey}&language=tr-TR&page={page}");
+
+            var json = HandleErrorMessage(response);
+
+            return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
+        }
         public async Task<MovieDetails> GetMovieDetails(int id)
         {
             var response = await _httpClient.GetAsync($"movie/{id}?api_key={apiKey}&language=tr-TR");
