@@ -1,95 +1,114 @@
-@model IEnumerable<Moviest.Models.Movie>
-    @{
+@model Moviest.Models.SearchResultsViewModel
+@{
+    ViewData["Title"] = "Arama Sonuclari";
     Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
-    var query = ViewBag.Query as string;
-    }
+}
 
-    <h1 class="modern-title">"@query" ile ilgili Sonuçlar</h1>
+<div class="page-title"><i class="bi bi-search"></i> Arama Sonuclari</div>
 
-    @if (!Model.Any())
-    {
-    <div class="alert alert-warning d-flex align-items-center p-4 rounded-3 shadow-sm" role="alert">
-        <i class="bi bi-exclamation-circle me-3 fs-3"></i>
+<p class="search-query-display">
+    <i class="bi bi-quote"></i> <span>@Model.Query</span> icin sonuclar
+    &mdash; @Model.ResultCount film bulundu
+</p>
+
+<form method="get" asp-action="Search" asp-controller="Movies" class="mb-4">
+    <input type="hidden" name="query" value="@Model.Query" />
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
         <div>
-            <h5 class="fw-bold mb-1">Sonuç Bulunamadı</h5>
-            <p class="mb-0">Arama kriterlerinize uygun bir film bulunamadı. Lütfen başka bir arama yapmayı deneyin.</p>
+            <label for="sortBy" class="form-label" style="font-size:0.78rem;">Siralama</label>
+            <select id="sortBy" name="sortBy" class="form-select form-select-sm">
+                <option value="relevance" selected="@(Model.SortBy == "relevance")">Ilgi</option>
+                <option value="rating_desc" selected="@(Model.SortBy == "rating_desc")">Puan yuksekten</option>
+                <option value="rating_asc" selected="@(Model.SortBy == "rating_asc")">Puan dusukten</option>
+                <option value="year_desc" selected="@(Model.SortBy == "year_desc")">Yil yeniden eskiye</option>
+                <option value="year_asc" selected="@(Model.SortBy == "year_asc")">Yil eskiden yeniye</option>
+                <option value="title_asc" selected="@(Model.SortBy == "title_asc")">A-Z</option>
+                <option value="title_desc" selected="@(Model.SortBy == "title_desc")">Z-A</option>
+            </select>
+        </div>
+        <div>
+            <label for="minRating" class="form-label" style="font-size:0.78rem;">Minimum puan</label>
+            <input id="minRating" name="minRating" type="number" min="0" max="10" step="0.1" class="form-control form-control-sm" value="@Model.MinRating" />
+        </div>
+        <button type="submit" class="btn-outline-accent" style="padding:8px 12px;">Uygula</button>
+    </div>
+</form>
+
+@if (!Model.Movies.Any())
+{
+    <div class="alert-app alert-info-app" style="max-width:460px;">
+        <i class="bi bi-info-circle-fill"></i>
+        <div>
+            <strong>"@Model.Query"</strong> icin sonuc bulunamadi. Farkli filtre veya anahtar kelimeler deneyin.
         </div>
     </div>
-    }
-
-    else
-    {
-    <div class="d-flex justify-content-between mb-3">
-        <a href="@Url.Action("Search", "Movies" , new { query=query, page=(ViewBag.CurrentPage - 1) })"
-            class="btn btn-warning @(ViewBag.CurrentPage <= 1 ? " disabled" : "" )">
-            &larr; Önceki
+}
+else
+{
+    <div class="pagination-row">
+        <a href="@Url.Action("Search", "Movies", new { query = Model.Query, page = Model.CurrentPage - 1, sortBy = Model.SortBy, minRating = Model.MinRating })"
+           class="btn-ghost @(Model.CurrentPage <= 1 ? "disabled" : "")">
+            <i class="bi bi-chevron-left"></i> Onceki
         </a>
-        <a href="@Url.Action("Search", "Movies" , new { query=query, page=(ViewBag.CurrentPage + 1) })"
-            class="btn btn-warning @(ViewBag.CurrentPage >= ViewBag.TotalPages ? " disabled" : "" )">
-            Sonraki &rarr;
+        <span class="page-info">Sayfa @Model.CurrentPage / @Model.TotalPages</span>
+        <a href="@Url.Action("Search", "Movies", new { query = Model.Query, page = Model.CurrentPage + 1, sortBy = Model.SortBy, minRating = Model.MinRating })"
+           class="btn-ghost @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
+            Sonraki <i class="bi bi-chevron-right"></i>
         </a>
     </div>
 
-    <div class="container">
-        <div class="row g-4">
-            @foreach (var movie in Model)
-            {
-            <div class="col-md-3">
-                <div class="card h-100 shadow-lg rounded-lg border-0">
-
-                    <img src="@(string.IsNullOrEmpty(movie.Poster) 
-                                ? " https://via.placeholder.com/500x750?text=No+Image" :
-                        $"https://image.tmdb.org/t/p/w500{movie.Poster}")" class="card-img-top rounded-top"
-                        alt="@movie.Title">
-
-                    <div class="card-body">
-                        <h5 class="card-title text-truncate">@movie.Title</h5>
-
-                        <p class="card-text text-muted small mb-1">
-                            <i class="bi bi-calendar"></i>
-                            @(DateTime.TryParse(movie.ReleaseDate, out var parsedDate)
-                            ? parsedDate.ToString("yyyy")
-                            : "-")
-                        </p>
+    <div class="movie-grid">
+        @foreach (var movie in Model.Movies)
+        {
+            <div class="movie-card">
+                <div class="poster-wrap">
+                    <img src="@(string.IsNullOrEmpty(movie.Poster) ? "https://via.placeholder.com/500x750?text=Gorsel+Yok" : $"https://image.tmdb.org/t/p/w500{movie.Poster}")"
+                         alt="@movie.Title" loading="lazy" />
+                    <div class="poster-overlay">
+                        <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="overlay-btn">
+                            <i class="bi bi-info-circle"></i> Detaylar
+                        </a>
                     </div>
-
-                    <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
-
-                        <span class="rating-tag @GetRatingClass(movie.VoteAverage)">
-                            <i class="bi bi-star-fill">
-                                @movie.VoteAverage.ToString("F1")
-                            </i>
+                    <button class="card-bookmark-btn" onclick="quickAdd(this)"
+                            data-movie-id="@movie.Id" data-title="@movie.Title"
+                            data-poster="@(movie.Poster ?? "")"
+                            data-year="@(DateTime.TryParse(movie.ReleaseDate, out var sbd) ? sbd.Year.ToString() : "")"
+                            title="Izleme listesine ekle">
+                        <i class="bi bi-bookmark-plus"></i>
+                    </button>
+                </div>
+                <div class="card-info">
+                    <div class="card-title" title="@movie.Title">@movie.Title</div>
+                    <div class="card-year">@(DateTime.TryParse(movie.ReleaseDate, out var d) ? d.ToString("yyyy") : "-")</div>
+                    <div class="card-footer-row">
+                        <span class="rating-badge @GetRatingClass(movie.VoteAverage)">
+                            <i class="bi bi-star-fill"></i> @movie.VoteAverage.ToString("F1")
                         </span>
-
-                        <a href="@Url.Action("Details", "Movies" , new { id=movie.Id })"
-                            class="btn btn-outline-primary btn-sm rounded-pill">Detaylar</a>
+                        <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="btn-outline-accent" style="padding:4px 10px;font-size:0.75rem;">
+                            Incele
+                        </a>
                     </div>
                 </div>
             </div>
-            }
-        </div>
-    </div>
-    }
-
-    <div class="d-flex justify-content-between mt-3">
-        <a href="@Url.Action("Search", "Movies" , new { query=query, page=(ViewBag.CurrentPage - 1) })"
-            class="btn btn-warning @(ViewBag.CurrentPage <= 1 ? " disabled" : "" )">
-            &larr; Önceki
-        </a>
-        <a href="@Url.Action("Search", "Movies" , new { query=query, page=(ViewBag.CurrentPage + 1) })"
-            class="btn btn-warning @(ViewBag.CurrentPage >= ViewBag.TotalPages ? " disabled" : "" )">
-            Sonraki &rarr;
-        </a>
-    </div>
-
-    @functions {
-    private string GetRatingClass(double vote)
-    {
-        if (vote >= 9) return "rating-high";
-        if (vote >= 7) return "rating-good";
-        if (vote >= 5) return "rating-average";
-        if (vote >= 4) return "rating-poor";
-        return "rating-bad";
         }
-    }
-    <link href="/css/custom.css" rel="stylesheet">
+    </div>
+
+    <div class="pagination-row" style="margin-top:1.5rem;">
+        <a href="@Url.Action("Search", "Movies", new { query = Model.Query, page = Model.CurrentPage - 1, sortBy = Model.SortBy, minRating = Model.MinRating })"
+           class="btn-ghost @(Model.CurrentPage <= 1 ? "disabled" : "")">
+            <i class="bi bi-chevron-left"></i> Onceki
+        </a>
+        <span class="page-info">Sayfa @Model.CurrentPage / @Model.TotalPages</span>
+        <a href="@Url.Action("Search", "Movies", new { query = Model.Query, page = Model.CurrentPage + 1, sortBy = Model.SortBy, minRating = Model.MinRating })"
+           class="btn-ghost @(Model.CurrentPage >= Model.TotalPages ? "disabled" : "")">
+            Sonraki <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+}
+
+@functions {
+    string GetRatingClass(double v) => v switch {
+        >= 9 => "rating-high", >= 7 => "rating-good", >= 5 => "rating-avg",
+        >= 4 => "rating-poor", > 0 => "rating-bad", _ => "rating-unknown"
+    };
+}

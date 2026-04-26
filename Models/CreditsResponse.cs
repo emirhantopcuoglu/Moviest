@@ -2,5 +2,5 @@ using Moviest.Models;
 
 public class CreditsResponse
 {
-    public List<Cast> Cast { get; set; }
+    public List<Cast> Cast { get; set; } = [];
 }

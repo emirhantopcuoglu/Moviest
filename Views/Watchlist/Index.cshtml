@@ -1,0 +1,190 @@
+@model Moviest.Models.WatchlistIndexViewModel
+@{
+    ViewData["Title"] = "Izleme Listem";
+    Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
+}
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:10px;">
+    <div class="page-title" style="margin-bottom:0;">
+        <i class="bi bi-bookmark-fill"></i> Izleme Listem
+    </div>
+    @if (Model.TotalCount > 0)
+    {
+        <div style="display:flex;gap:12px;align-items:center;font-size:0.82rem;color:var(--text-muted);">
+            <span><i class="bi bi-collection" style="color:var(--accent);"></i> @Model.TotalCount film</span>
+            <span><i class="bi bi-eye-fill" style="color:var(--success);"></i> @Model.WatchedCount izlendi</span>
+            <span><i class="bi bi-star-fill" style="color:var(--warning);"></i> @Model.RatedCount puanlandi</span>
+        </div>
+    }
+</div>
+
+<form method="get" asp-action="Index" asp-controller="Watchlist" class="mb-4">
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:end;">
+        <div>
+            <label for="query" class="form-label" style="font-size:0.78rem;">Ara</label>
+            <input id="query" name="query" class="form-control form-control-sm" value="@Model.Query" placeholder="Film adi" />
+        </div>
+        <div>
+            <label for="status" class="form-label" style="font-size:0.78rem;">Durum</label>
+            <select id="status" name="status" class="form-select form-select-sm">
+                <option value="all" selected="@(Model.Status == "all")">Tumu</option>
+                <option value="watched" selected="@(Model.Status == "watched")">Izlenenler</option>
+                <option value="unwatched" selected="@(Model.Status == "unwatched")">Izlenmeyenler</option>
+                <option value="rated" selected="@(Model.Status == "rated")">Puanlananlar</option>
+            </select>
+        </div>
+        <div>
+            <label for="sortBy" class="form-label" style="font-size:0.78rem;">Sirala</label>
+            <select id="sortBy" name="sortBy" class="form-select form-select-sm">
+                <option value="recent" selected="@(Model.SortBy == "recent")">En yeni eklenen</option>
+                <option value="oldest" selected="@(Model.SortBy == "oldest")">En eski eklenen</option>
+                <option value="title" selected="@(Model.SortBy == "title")">Ada gore</option>
+                <option value="rating" selected="@(Model.SortBy == "rating")">Puana gore</option>
+            </select>
+        </div>
+        <button type="submit" class="btn-outline-accent" style="padding:8px 12px;">Uygula</button>
+    </div>
+</form>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-app alert-success-app">
+        <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+    </div>
+}
+
+@if (!Model.Items.Any())
+{
+    <div class="watchlist-empty">
+        <i class="bi bi-bookmark"></i>
+        <h3>Izleme listen bos</h3>
+        <p>Film detay sayfalarindan izleme listene ekleyebilirsin.</p>
+        <a href="/movies" class="btn-accent">
+            <i class="bi bi-fire"></i> Film Kesfet
+        </a>
+    </div>
+}
+else
+{
+    <div class="movie-grid">
+        @foreach (var item in Model.Items)
+        {
+            <div class="movie-card @(item.IsWatched ? "wl-card-watched" : "")">
+                <div class="poster-wrap">
+                    <img src="@(string.IsNullOrEmpty(item.MoviePoster) ? "https://via.placeholder.com/500x750?text=Gorsel+Yok" : $"https://image.tmdb.org/t/p/w500{item.MoviePoster}")"
+                         alt="@item.MovieTitle" loading="lazy" />
+                    @if (item.IsWatched)
+                    {
+                        <div class="wl-watched-badge"><i class="bi bi-eye-fill"></i> Izlendi</div>
+                    }
+                    <div class="poster-overlay">
+                        <a href="@Url.Action("Details", "Movies", new { id = item.MovieId })" class="overlay-btn">
+                            <i class="bi bi-info-circle"></i> Detaylar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-info">
+                    <div class="card-title" title="@item.MovieTitle">@item.MovieTitle</div>
+                    <div class="card-year">@(item.MovieYear ?? "-")</div>
+
+                    @if (item.PersonalRating.HasValue)
+                    {
+                        <div class="wl-my-rating">
+                            <i class="bi bi-star-fill" style="color:var(--accent);font-size:0.68rem;"></i>
+                            <span>Puanim: @item.PersonalRating/10</span>
+                        </div>
+                    }
+
+                    <div class="card-footer-row" style="margin-top:auto;">
+                        <span style="font-size:0.70rem;color:var(--text-muted);">
+                            <i class="bi bi-clock" style="font-size:0.65rem;"></i>
+                            @item.AddedAt.ToString("dd MMM yyyy")
+                        </span>
+                        <div style="display:flex;gap:5px;align-items:center;">
+                            <button class="wl-icon-btn @(item.IsWatched ? "active" : "")"
+                                    onclick="toggleWatched(this, @item.MovieId)"
+                                    title="@(item.IsWatched ? "Izlendi - Geri al" : "Izledim olarak isaretle")">
+                                <i class="bi bi-@(item.IsWatched ? "eye-fill" : "eye")"></i>
+                            </button>
+                            <form asp-controller="Watchlist" asp-action="Remove" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="movieId" value="@item.MovieId" />
+                                <button type="submit" class="wl-icon-btn danger" title="Listeden cikar">
+                                    <i class="bi bi-trash3"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="wl-rating-row">
+                        <span style="font-size:0.70rem;color:var(--text-muted);">Puan:</span>
+                        <select class="wl-rating-select"
+                                onchange="rateMovie(@item.MovieId, this.value)"
+                                title="Kisisel puanin">
+                            <option value="">-</option>
+                            @for (int ri = 10; ri >= 1; ri--)
+                            {
+                                if (item.PersonalRating == ri)
+                                {
+                                    <option value="@ri" selected>@ri/10</option>
+                                }
+                                else
+                                {
+                                    <option value="@ri">@ri/10</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+<script>
+async function toggleWatched(btn, movieId) {
+    const csrf = document.querySelector('#__csrf input[name="__RequestVerificationToken"]').value;
+    const fd = new FormData();
+    fd.append('__RequestVerificationToken', csrf);
+    fd.append('movieId', movieId);
+    const resp = await fetch('/Watchlist/ToggleWatched', {
+        method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd
+    });
+    if (resp.ok) {
+        const data = await resp.json();
+        const card = btn.closest('.movie-card');
+        const icon = btn.querySelector('i');
+        if (data.isWatched) {
+            btn.classList.add('active');
+            icon.className = 'bi bi-eye-fill';
+            btn.title = 'Izlendi - Geri al';
+            card.classList.add('wl-card-watched');
+            if (!card.querySelector('.wl-watched-badge')) {
+                const badge = document.createElement('div');
+                badge.className = 'wl-watched-badge';
+                badge.innerHTML = '<i class="bi bi-eye-fill"></i> Izlendi';
+                card.querySelector('.poster-wrap').appendChild(badge);
+            }
+        } else {
+            btn.classList.remove('active');
+            icon.className = 'bi bi-eye';
+            btn.title = 'Izledim olarak isaretle';
+            card.classList.remove('wl-card-watched');
+            card.querySelector('.wl-watched-badge')?.remove();
+        }
+    }
+}
+
+async function rateMovie(movieId, rating) {
+    const csrf = document.querySelector('#__csrf input[name="__RequestVerificationToken"]').value;
+    const fd = new FormData();
+    fd.append('__RequestVerificationToken', csrf);
+    fd.append('movieId', movieId);
+    fd.append('rating', rating);
+    await fetch('/Watchlist/Rate', {
+        method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd
+    });
+}
+</script>
+}

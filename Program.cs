@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Moviest.Data;
 using Moviest.Middleware;
 using Moviest.Services;
+using System.Net.Http.Headers;
 using System.Threading.RateLimiting;
 
 const int MinPasswordLength = 8;
@@ -94,7 +95,13 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // ── Services ──────────────────────────────────────────────
-builder.Services.AddHttpClient<IMovieService, MovieService>();
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient<IMovieService, MovieService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+    client.DefaultRequestHeaders.Accept.Add(
+        new MediaTypeWithQualityHeaderValue("application/json"));
+});
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

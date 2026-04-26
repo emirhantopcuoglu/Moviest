@@ -30,16 +30,26 @@ namespace Moviest.Controllers
             _movieService = movieService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? query, string status = "all", string sortBy = "recent")
         {
             var userId = _userManager.GetUserId(User);
-            var items = await _context.WatchlistItems
+            var allItems = await _context.WatchlistItems
                 .Where(w => w.UserId == userId)
-                .OrderByDescending(w => w.AddedAt)
                 .AsNoTracking()
                 .ToListAsync();
 
-            return View(items);
+            var filteredItems = ApplyFilters(allItems, query, status, sortBy);
+
+            return View(new WatchlistIndexViewModel
+            {
+                Query = query ?? string.Empty,
+                Status = status,
+                SortBy = sortBy,
+                TotalCount = allItems.Count,
+                WatchedCount = allItems.Count(item => item.IsWatched),
+                RatedCount = allItems.Count(item => item.PersonalRating.HasValue),
+                Items = filteredItems
+            });
         }
 
         [HttpPost]
@@ -209,6 +219,39 @@ namespace Moviest.Controllers
             return value.Length <= maxLength
                 ? value
                 : value[..maxLength];
+        }
+
+        private static IReadOnlyList<WatchlistItem> ApplyFilters(
+            IEnumerable<WatchlistItem> items,
+            string? query,
+            string? status,
+            string? sortBy)
+        {
+            var filteredItems = items;
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                filteredItems = filteredItems.Where(item =>
+                    item.MovieTitle.Contains(query, StringComparison.OrdinalIgnoreCase));
+            }
+
+            filteredItems = status switch
+            {
+                "watched" => filteredItems.Where(item => item.IsWatched),
+                "unwatched" => filteredItems.Where(item => !item.IsWatched),
+                "rated" => filteredItems.Where(item => item.PersonalRating.HasValue),
+                _ => filteredItems
+            };
+
+            filteredItems = sortBy switch
+            {
+                "title" => filteredItems.OrderBy(item => item.MovieTitle),
+                "oldest" => filteredItems.OrderBy(item => item.AddedAt),
+                "rating" => filteredItems.OrderByDescending(item => item.PersonalRating ?? 0).ThenBy(item => item.MovieTitle),
+                _ => filteredItems.OrderByDescending(item => item.AddedAt)
+            };
+
+            return filteredItems.ToList();
         }
     }
 }

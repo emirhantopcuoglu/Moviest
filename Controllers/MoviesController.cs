@@ -134,16 +134,23 @@ namespace Moviest.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Search(string query, int page = 1)
+        public async Task<IActionResult> Search(string query, int page = 1, string sortBy = "relevance", double? minRating = null)
         {
             if (string.IsNullOrWhiteSpace(query))
-                return View(new List<Movie>());
+                return View(new SearchResultsViewModel());
 
             var movieResponse = await _movieService.SearchMovies(query, page);
-            ViewBag.Query = query;
-            ViewBag.CurrentPage = movieResponse?.Page ?? 1;
-            ViewBag.TotalPages = movieResponse?.TotalPages ?? 1;
-            return View(movieResponse?.Movies ?? new List<Movie>());
+            var movies = ApplySearchFilters(movieResponse?.Movies ?? new List<Movie>(), sortBy, minRating);
+
+            return View(new SearchResultsViewModel
+            {
+                Query = query,
+                SortBy = sortBy,
+                MinRating = minRating,
+                CurrentPage = movieResponse?.Page ?? 1,
+                TotalPages = movieResponse?.TotalPages ?? 1,
+                Movies = movies
+            });
         }
 
         [HttpGet]
@@ -174,6 +181,34 @@ namespace Moviest.Controllers
             {
                 return fallback;
             }
+        }
+
+        private static IReadOnlyList<Movie> ApplySearchFilters(IEnumerable<Movie> movies, string? sortBy, double? minRating)
+        {
+            var filteredMovies = movies;
+
+            if (minRating.HasValue)
+                filteredMovies = filteredMovies.Where(movie => movie.VoteAverage >= minRating.Value);
+
+            filteredMovies = sortBy switch
+            {
+                "rating_desc" => filteredMovies.OrderByDescending(movie => movie.VoteAverage),
+                "rating_asc" => filteredMovies.OrderBy(movie => movie.VoteAverage),
+                "year_desc" => filteredMovies.OrderByDescending(movie => ParseReleaseYear(movie.ReleaseDate)),
+                "year_asc" => filteredMovies.OrderBy(movie => ParseReleaseYear(movie.ReleaseDate)),
+                "title_asc" => filteredMovies.OrderBy(movie => movie.Title),
+                "title_desc" => filteredMovies.OrderByDescending(movie => movie.Title),
+                _ => filteredMovies
+            };
+
+            return filteredMovies.ToList();
+        }
+
+        private static int ParseReleaseYear(string? releaseDate)
+        {
+            return DateTime.TryParse(releaseDate, out var parsedDate)
+                ? parsedDate.Year
+                : 0;
         }
     }
 }
