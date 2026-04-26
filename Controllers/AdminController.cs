@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moviest.Constants;
+using static Moviest.Constants.TempDataKeys;
 
 namespace Moviest.Controllers
 {
@@ -38,7 +39,7 @@ namespace Moviest.Controllers
         {
             if (string.IsNullOrEmpty(id))
             {
-                TempData["Error"] = "Geçersiz kullanıcı kimliği.";
+                TempData[Error] = "Geçersiz kullanıcı kimliği.";
                 return RedirectToAction("UserList");
             }
 
@@ -46,7 +47,7 @@ namespace Moviest.Controllers
 
             if (id == currentAdminId)
             {
-                TempData["Error"] = "Kendi hesabınızı silemezsiniz!";
+                TempData[Error] = "Kendi hesabınızı silemezsiniz!";
                 return RedirectToAction("UserList");
             }
 
@@ -54,18 +55,18 @@ namespace Moviest.Controllers
 
             if (user == null)
             {
-                TempData["Error"] = "Kullanıcı bulunamadı.";
+                TempData[Error] = "Kullanıcı bulunamadı.";
                 return RedirectToAction("UserList");
             }
 
             if (await _userManager.IsInRoleAsync(user, Roles.Admin))
             {
-                TempData["Error"] = "Diğer adminleri silemezsiniz!";
+                TempData[Error] = "Diğer adminleri silemezsiniz!";
                 return RedirectToAction("UserList");
             }
 
             await _userManager.DeleteAsync(user);
-            TempData["Success"] = $"{user.UserName} başarıyla silindi.";
+            TempData[Success] = $"{user.UserName} başarıyla silindi.";
 
             return RedirectToAction("UserList");
         }

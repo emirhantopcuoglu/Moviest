@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Moviest.Constants;
+using static Moviest.Constants.ConfigKeys;
 
 namespace Moviest.Data
 {
@@ -27,8 +28,8 @@ namespace Moviest.Data
 
         private static async Task EnsureAdminAsync(UserManager<IdentityUser> userManager, IConfiguration configuration)
         {
-            var adminEmail = configuration["AdminCredentials:Email"];
-            var adminPassword = configuration["AdminCredentials:Password"];
+            var adminEmail = configuration[AdminEmail];
+            var adminPassword = configuration[AdminPassword];
 
             var adminUser = await userManager.FindByNameAsync(Roles.Admin);
 
