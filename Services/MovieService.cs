@@ -22,12 +22,14 @@ namespace Moviest.Services
         {
             _httpClient = httpClient;
 
-            var baseUrl = configuration[ConfigKeys.ApiBaseUrl]
-                ?? throw new InvalidOperationException($"{ConfigKeys.ApiBaseUrl} yapılandırması eksik.");
+            var baseUrl = configuration[ConfigKeys.ApiBaseUrl];
+            if (string.IsNullOrWhiteSpace(baseUrl))
+                throw new InvalidOperationException($"{ConfigKeys.ApiBaseUrl} yapılandırması eksik veya boş.");
             _httpClient.BaseAddress = new Uri(baseUrl);
 
-            _apiKey = configuration[ConfigKeys.ApiKey]
-                ?? throw new InvalidOperationException($"{ConfigKeys.ApiKey} yapılandırması eksik.");
+            _apiKey = configuration[ConfigKeys.ApiKey];
+            if (string.IsNullOrWhiteSpace(_apiKey))
+                throw new InvalidOperationException($"{ConfigKeys.ApiKey} yapılandırması eksik veya boş.");
         }
 
         private async Task<string> ReadResponseAsync(HttpResponseMessage response)
@@ -153,6 +155,13 @@ namespace Moviest.Services
             var json = await ReadResponseAsync(response);
             var actorCredits = JsonSerializer.Deserialize<ActorCreditsResponse>(json, _jsonOptions);
             return actorCredits?.Cast ?? new List<Movie>();
+        }
+
+        public async Task<MovieResponse> GetTrendingMovies(int page = 1)
+        {
+            var response = await _httpClient.GetAsync(BuildUrl(TmdbEndpoints.TrendingMovies, $"&page={page}"));
+            var json = await ReadResponseAsync(response);
+            return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions)!;
         }
     }
 }
