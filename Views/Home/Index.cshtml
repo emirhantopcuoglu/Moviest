@@ -1,8 +1,73 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@using Microsoft.AspNetCore.Identity
+@using Moviest.Constants
+@inject UserManager<IdentityUser> UserManager
+@inject SignInManager<IdentityUser> SignInManager
+@{
+    ViewData["Title"] = "Ana Sayfa";
+    var currentUser = SignInManager.IsSignedIn(User) ? await UserManager.GetUserAsync(User) : null;
+    var isAdmin = currentUser != null && await UserManager.IsInRoleAsync(currentUser, Roles.Admin);
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-section">
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <div class="hero-greeting">
+            Hoş geldin, <span>@UserManager.GetUserName(User)</span> 👋
+        </div>
+        <p class="hero-subtitle">Bugün hangi filmi keşfediyorsun?</p>
+        <div class="hero-actions">
+            <a href="/movies" class="btn-accent">
+                <i class="bi bi-fire"></i> Popüler Filmlere Git
+            </a>
+            <a href="/movies/trending" class="btn-outline-accent">
+                <i class="bi bi-graph-up-arrow"></i> Trend Filmler
+            </a>
+            @if (isAdmin)
+            {
+                <a href="/Admin" class="btn-ghost">
+                    <i class="bi bi-shield-check"></i> Admin Paneli
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="hero-eyebrow">
+            <i class="bi bi-camera-reels-fill"></i> Film Platformu
+        </div>
+        <h1 class="hero-title">
+            En İyi Filmleri<br><span class="hl">Keşfet & İzle</span>
+        </h1>
+        <p class="hero-subtitle">
+            Popüler filmleri takip et, izleme listesi oluştur, favori türlerini keşfet.
+            Binlerce film seni bekliyor.
+        </p>
+        <div class="hero-actions">
+            <a href="/Account/Register" class="btn-accent">
+                <i class="bi bi-person-plus"></i> Ücretsiz Üye Ol
+            </a>
+            <a href="/Account/Login" class="btn-outline-accent">
+                <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+            </a>
+        </div>
+    }
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <span class="feature-icon">🎬</span>
+            <div class="feature-card-title">Sonsuz Katalog</div>
+            <p class="feature-card-desc">TMDB veritabanından güncel film bilgileri, fragmanlar ve oyuncu kadrosu.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">📑</span>
+            <div class="feature-card-title">İzleme Listesi</div>
+            <p class="feature-card-desc">İzlemek istediğin filmleri listene ekle, hiçbirini kaçırma.</p>
+        </div>
+        <div class="feature-card">
+            <span class="feature-icon">🔥</span>
+            <div class="feature-card-title">Trend & Popüler</div>
+            <p class="feature-card-desc">Bu hafta en çok konuşulan filmleri anında keşfet.</p>
+        </div>
+    </div>
 </div>
