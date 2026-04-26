@@ -7,9 +7,9 @@ namespace Moviest.Controllers
     [Authorize]
     public class MoviesController : Controller
     {
-        private readonly MovieService _movieService;
+        private readonly IMovieService _movieService;
 
-        public MoviesController(MovieService movieService)
+        public MoviesController(IMovieService movieService)
         {
             _movieService = movieService;
         }
@@ -110,9 +110,13 @@ namespace Moviest.Controllers
 
         public async Task<IActionResult> MoviesByGenre(int id, int page = 1)
         {
-            var moviesByGenre = await _movieService.GetMoviesByGenre(id, page);
-            var genreName = await _movieService.GetGenreNameById(id);
-            ViewData["GenreName"] = genreName;
+            var moviesTask = _movieService.GetMoviesByGenre(id, page);
+            var genreNameTask = _movieService.GetGenreNameById(id);
+
+            await Task.WhenAll(moviesTask, genreNameTask);
+
+            var moviesByGenre = moviesTask.Result;
+            ViewData["GenreName"] = genreNameTask.Result;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = moviesByGenre.TotalPages;
             return View(moviesByGenre.Movies);
