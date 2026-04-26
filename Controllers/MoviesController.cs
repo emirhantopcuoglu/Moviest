@@ -127,9 +127,9 @@ namespace Moviest.Controllers
         {
             var movieResponse = await _movieService.SearchMovies(query, page);
             ViewBag.Query = query;
-            ViewBag.CurrentPage = movieResponse.Page;
-            ViewBag.TotalPages = movieResponse.TotalPages;
-            return View(movieResponse.Movies);
+            ViewBag.CurrentPage = movieResponse?.Page ?? 1;
+            ViewBag.TotalPages = movieResponse?.TotalPages ?? 1;
+            return View(movieResponse?.Movies ?? new List<Movie>());
         }
     }
 }
