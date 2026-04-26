@@ -9,8 +9,3 @@
         <p class="text-muted">Hata Kodu: @Model.RequestId</p>
     }
 
-    @if (!string.IsNullOrEmpty(Model.StackTrace))
-    {
-        <pre class="bg-light p-3 rounded">@Model.StackTrace</pre>
-    }
-
