@@ -3,6 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using Moviest.Data;
 using Moviest.Services;
 
+const int MinPasswordLength = 6;
+const int SessionDurationDays = 7;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<IdentityContext>(options =>
@@ -14,7 +17,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.Password.RequireLowercase = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequiredLength = 6;
+    options.Password.RequiredLength = MinPasswordLength;
 
     options.User.RequireUniqueEmail = true;
 })
@@ -27,7 +30,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.LogoutPath = "/Account/Login";
 
-    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    options.ExpireTimeSpan = TimeSpan.FromDays(SessionDurationDays);
     options.SlidingExpiration = true;
 
     options.Cookie.HttpOnly = true;
