@@ -20,15 +20,14 @@ namespace Moviest.Services
             }
         }
 
-        // Bu fonksiyon olası HTTP hataları ve null dönüşler için hata mesajı üretir.
-        private string HandleErrorMessage(HttpResponseMessage response)
+        private async Task<string> ReadResponseAsync(HttpResponseMessage response)
         {
             if (!response.IsSuccessStatusCode)
             {
                 throw new HttpRequestException($"HTTP isteğinde bir sorun oluştu. Hata kodu: {response.StatusCode}");
             }
 
-            var content = response.Content.ReadAsStringAsync().Result;
+            var content = await response.Content.ReadAsStringAsync();
 
             if (string.IsNullOrEmpty(content))
             {
@@ -48,7 +47,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"movie/popular?api_key={apiKey}&language=tr-TR&page={page}");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
         }
@@ -57,7 +56,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"movie/now_playing?api_key={apiKey}&language=tr-TR&page={page}");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
         }
@@ -65,7 +64,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"movie/top_rated?api_key={apiKey}&language=tr-TR&page={page}");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
         }
@@ -74,7 +73,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"movie/upcoming?api_key={apiKey}&language=tr-TR&page={page}");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
         }
@@ -82,7 +81,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"movie/{id}?api_key={apiKey}&language=tr-TR");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             return JsonSerializer.Deserialize<MovieDetails>(json, _jsonOptions);
         }
@@ -91,7 +90,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"movie/{id}/credits?api_key={apiKey}&language=tr-TR");
             
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             var creditsResponse = JsonSerializer.Deserialize<CreditsResponse>(json, _jsonOptions);
 
@@ -102,7 +101,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"discover/movie?api_key={apiKey}&language=tr-TR&with_genres={genreId}&page={page}");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
         }
@@ -110,9 +109,8 @@ namespace Moviest.Services
         public async Task<GenreListResponse> GetGenres()
         {
             var response = await _httpClient.GetAsync($"genre/movie/list?api_key={apiKey}&language=tr-TR");
-            HandleErrorMessage(response);
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             return JsonSerializer.Deserialize<GenreListResponse>(json, _jsonOptions);
         }
@@ -121,7 +119,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"genre/movie/list?api_key={apiKey}&language=tr-TR");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             var genreListResponse = JsonSerializer.Deserialize<GenreListResponse>(json, _jsonOptions);
 
@@ -134,7 +132,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"search/movie?api_key={apiKey}&language=tr-TR&query={Uri.EscapeDataString(query)}&page={page}");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             return JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
         }
@@ -142,7 +140,7 @@ namespace Moviest.Services
         public async Task<List<Video>> GetTrailer(int movieId)
         {
             var response = await _httpClient.GetAsync($"movie/{movieId}/videos?api_key={apiKey}");
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
             var videoResponse = JsonSerializer.Deserialize<VideoResponse>(json, _jsonOptions);
             return videoResponse?.Results?.Where(v => v.Type == "Trailer" && v.Site == "YouTube").ToList();
         }
@@ -151,7 +149,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"movie/{movieId}/similar?api_key={apiKey}&language=tr-TR&page={page}");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             var similarMoviesResponse = JsonSerializer.Deserialize<MovieResponse>(json, _jsonOptions);
 
@@ -162,7 +160,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"person/{actorId}?api_key={apiKey}&language=tr-TR");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             return JsonSerializer.Deserialize<ActorDetails>(json, _jsonOptions);
         }
@@ -171,7 +169,7 @@ namespace Moviest.Services
         {
             var response = await _httpClient.GetAsync($"person/{actorId}/movie_credits?api_key={apiKey}&language=tr-TR");
 
-            var json = HandleErrorMessage(response);
+            var json = await ReadResponseAsync(response);
 
             var actorCredits = JsonSerializer.Deserialize<ActorCreditsResponse>(json, _jsonOptions);
 
