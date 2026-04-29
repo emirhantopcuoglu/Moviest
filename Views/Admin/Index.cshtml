@@ -1,0 +1,47 @@
+@model Moviest.Models.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Paneli";
+    Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
+}
+
+<div class="page-title"><i class="bi bi-shield-check"></i> Admin Paneli</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:2rem;">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-blue"><i class="bi bi-people-fill"></i></div>
+        <div>
+            <div class="stat-value">@Model.TotalUsers</div>
+            <div class="stat-label">Toplam Kullanıcı</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-gold"><i class="bi bi-person-fill-check"></i></div>
+        <div>
+            <div class="stat-value">@Model.RegularUsers</div>
+            <div class="stat-label">Üye</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-green"><i class="bi bi-bookmark-fill"></i></div>
+        <div>
+            <div class="stat-value">@Model.WatchlistCount</div>
+            <div class="stat-label">İzleme Listesi Girişi</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-danger"><i class="bi bi-shield-lock-fill"></i></div>
+        <div>
+            <div class="stat-value">@Model.AdminCount</div>
+            <div class="stat-label">Admin Sayısı</div>
+        </div>
+    </div>
+</div>
+
+<div class="section-title"><i class="bi bi-lightning-charge"></i> Hızlı İşlemler</div>
+<div style="display:flex;flex-direction:column;gap:6px;max-width:400px;">
+    <a class="admin-action-link" asp-action="UserList">
+        <i class="bi bi-people"></i>
+        Kullanıcı Listesi
+        <i class="bi bi-chevron-right link-arrow"></i>
+    </a>
+</div>

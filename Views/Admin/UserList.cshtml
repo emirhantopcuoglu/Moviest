@@ -1,0 +1,62 @@
+@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
+@{
+    ViewData["Title"] = "Kullanıcı Listesi";
+    Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
+}
+
+<div class="page-title"><i class="bi bi-people"></i> Kullanıcı Listesi</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert-app alert-success-app">
+        <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert-app alert-danger-app">
+        <i class="bi bi-exclamation-circle-fill"></i> @TempData["Error"]
+    </div>
+}
+
+<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;">
+    <table class="table-app">
+        <thead>
+            <tr>
+                <th>Kullanıcı Adı</th>
+                <th>E-posta</th>
+                <th style="text-align:right;">İşlem</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div style="width:28px;height:28px;border-radius:50%;background:var(--accent-light);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:700;font-size:0.75rem;flex-shrink:0;">
+                                @(user.UserName?.Substring(0, 1).ToUpper())
+                            </div>
+                            @user.UserName
+                        </div>
+                    </td>
+                    <td style="color:var(--text-muted);">@user.Email</td>
+                    <td style="text-align:right;">
+                        <form asp-action="DeleteUser" asp-controller="Admin" method="post" class="d-inline"
+                              onsubmit="return confirm('@user.UserName kullanıcısını silmek istediğinize emin misiniz?')">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@user.Id" />
+                            <button type="submit" class="btn-danger-soft">
+                                <i class="bi bi-trash"></i> Sil
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<p style="font-size:0.78rem;color:var(--text-muted);margin-top:0.75rem;">
+    Toplam @Model.Count() kullanıcı listeleniyor. (Admin hesabınız hariç)
+</p>

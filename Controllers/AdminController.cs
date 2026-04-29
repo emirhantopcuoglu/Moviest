@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Moviest.Constants;
+using Moviest.Data;
+using Moviest.Models;
 using static Moviest.Constants.TempDataKeys;
 
 namespace Moviest.Controllers
@@ -11,15 +13,28 @@ namespace Moviest.Controllers
     public class AdminController : Controller
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IdentityContext _context;
 
-        public AdminController(UserManager<IdentityUser> userManager)
+        public AdminController(UserManager<IdentityUser> userManager, IdentityContext context)
         {
             _userManager = userManager;
+            _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var allUsers = await _userManager.Users.AsNoTracking().ToListAsync();
+            var adminRole = await _userManager.GetUsersInRoleAsync(Roles.Admin);
+
+            var viewModel = new AdminDashboardViewModel
+            {
+                TotalUsers = allUsers.Count,
+                AdminCount = adminRole.Count,
+                RegularUsers = allUsers.Count - adminRole.Count,
+                WatchlistCount = await _context.WatchlistItems.CountAsync()
+            };
+
+            return View(viewModel);
         }
 
         public async Task<IActionResult> UserList()
@@ -35,6 +50,7 @@ namespace Moviest.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUser(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -64,6 +80,10 @@ namespace Moviest.Controllers
                 TempData[Error] = "Diğer adminleri silemezsiniz!";
                 return RedirectToAction("UserList");
             }
+
+            var watchlistItems = _context.WatchlistItems.Where(w => w.UserId == id);
+            _context.WatchlistItems.RemoveRange(watchlistItems);
+            await _context.SaveChangesAsync();
 
             await _userManager.DeleteAsync(user);
             TempData[Success] = $"{user.UserName} başarıyla silindi.";
