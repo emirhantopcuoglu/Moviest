@@ -1,8 +1,8 @@
 appsettings.json
 appsettings.Development.json
 userDatabase.db
-# Tüm wwwroot klasörünü hariç tut
-wwwroot/
+
+wwwroot/lib/
 
 ## Windows işletim sistemi dosyaları
 Thumbs.db
@@ -41,6 +41,7 @@ bower_components/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+.claude/
 
 ## Log ve hata raporlama dosyaları
 *.stackdump
