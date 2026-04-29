@@ -1,0 +1,80 @@
+@model IEnumerable<Moviest.Models.Movie>
+@{
+    ViewData["Title"] = "Trend Filmler";
+    Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
+}
+
+<div class="page-title"><i class="bi bi-graph-up-arrow"></i> Bu Hafta Trend</div>
+
+<div class="pagination-row">
+    <a href="@Url.Action("Trending", "Movies", new { page = ViewBag.CurrentPage - 1 })"
+       class="btn-ghost @(ViewBag.CurrentPage <= 1 ? "disabled" : "")">
+        <i class="bi bi-chevron-left"></i> Önceki
+    </a>
+    <span class="page-info">Sayfa @ViewBag.CurrentPage / @ViewBag.TotalPages</span>
+    <a href="@Url.Action("Trending", "Movies", new { page = ViewBag.CurrentPage + 1 })"
+       class="btn-ghost @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
+        Sonraki <i class="bi bi-chevron-right"></i>
+    </a>
+</div>
+
+<div class="movie-grid">
+    @{int rank = 1;}
+    @foreach (var movie in Model)
+    {
+        <div class="movie-card">
+            <div class="poster-wrap">
+                @if (rank <= 10)
+                {
+                    <span class="trending-badge">#@rank Trend</span>
+                }
+                <img src="@(string.IsNullOrEmpty(movie.Poster) ? "https://via.placeholder.com/500x750?text=Görsel+Yok" : $"https://image.tmdb.org/t/p/w500{movie.Poster}")"
+                     alt="@movie.Title" loading="lazy" />
+                <div class="poster-overlay">
+                    <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="overlay-btn">
+                        <i class="bi bi-info-circle"></i> Detaylar
+                    </a>
+                </div>
+                <button class="card-bookmark-btn" onclick="quickAdd(this)"
+                        data-movie-id="@movie.Id" data-title="@movie.Title"
+                        data-poster="@(movie.Poster ?? "")"
+                        data-year="@(DateTime.TryParse(movie.ReleaseDate, out var tbd) ? tbd.Year.ToString() : "")"
+                        title="İzleme listesine ekle">
+                    <i class="bi bi-bookmark-plus"></i>
+                </button>
+            </div>
+            <div class="card-info">
+                <div class="card-title" title="@movie.Title">@movie.Title</div>
+                <div class="card-year">@(DateTime.TryParse(movie.ReleaseDate, out var d) ? d.ToString("yyyy") : "-")</div>
+                <div class="card-footer-row">
+                    <span class="rating-badge @GetRatingClass(movie.VoteAverage)">
+                        <i class="bi bi-star-fill"></i> @movie.VoteAverage.ToString("F1")
+                    </span>
+                    <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="btn-outline-accent" style="padding:4px 10px;font-size:0.75rem;">
+                        İncele
+                    </a>
+                </div>
+            </div>
+        </div>
+        rank++;
+    }
+</div>
+
+<div class="pagination-row" style="margin-top:1.5rem;">
+    <a href="@Url.Action("Trending", "Movies", new { page = ViewBag.CurrentPage - 1 })"
+       class="btn-ghost @(ViewBag.CurrentPage <= 1 ? "disabled" : "")">
+        <i class="bi bi-chevron-left"></i> Önceki
+    </a>
+    <span class="page-info">Sayfa @ViewBag.CurrentPage / @ViewBag.TotalPages</span>
+    <a href="@Url.Action("Trending", "Movies", new { page = ViewBag.CurrentPage + 1 })"
+       class="btn-ghost @(ViewBag.CurrentPage >= ViewBag.TotalPages ? "disabled" : "")">
+        Sonraki <i class="bi bi-chevron-right"></i>
+    </a>
+</div>
+
+@functions {
+    string GetRatingClass(double v) => v switch {
+        >= 9 => "rating-high", >= 7 => "rating-good", >= 5 => "rating-avg",
+        >= 4 => "rating-poor", > 0 => "rating-bad", _ => "rating-unknown"
+    };
+}

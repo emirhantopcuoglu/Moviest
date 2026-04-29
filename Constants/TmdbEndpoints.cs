@@ -6,6 +6,7 @@ namespace Moviest.Constants
         internal const string NowPlaying = "movie/now_playing";
         internal const string TopRated = "movie/top_rated";
         internal const string Upcoming = "movie/upcoming";
+        internal const string TrendingMovies = "trending/movie/week";
         internal const string MovieDetail = "movie/{0}";
         internal const string MovieCredits = "movie/{0}/credits";
         internal const string MovieVideos = "movie/{0}/videos";
