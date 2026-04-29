@@ -19,6 +19,7 @@ namespace Moviest.Controllers
 
         public async Task<IActionResult> Index(int page = 1)
         {
+            page = Math.Max(1, page);
             var movies = await _movieService.GetPopularMovies(page);
             if (movies?.Movies == null || !movies.Movies.Any())
                 return View(new List<Movie>());
@@ -30,6 +31,7 @@ namespace Moviest.Controllers
 
         public async Task<IActionResult> NowPlaying(int page = 1)
         {
+            page = Math.Max(1, page);
             var movies = await _movieService.GetNowPlaying(page);
             if (movies?.Movies == null || !movies.Movies.Any())
                 return View(new List<Movie>());
@@ -41,6 +43,7 @@ namespace Moviest.Controllers
 
         public async Task<IActionResult> TopRatedMovies(int page = 1)
         {
+            page = Math.Max(1, page);
             var movies = await _movieService.GetTopRatedMovies(page);
             if (movies?.Movies == null || !movies.Movies.Any())
                 return View(new List<Movie>());
@@ -52,6 +55,7 @@ namespace Moviest.Controllers
 
         public async Task<IActionResult> UpcomingMovies(int page = 1)
         {
+            page = Math.Max(1, page);
             var movies = await _movieService.GetUpcomingMovies(page);
             if (movies?.Movies == null || !movies.Movies.Any())
                 return View(new List<Movie>());
@@ -63,6 +67,7 @@ namespace Moviest.Controllers
 
         public async Task<IActionResult> Trending(int page = 1)
         {
+            page = Math.Max(1, page);
             var movies = await _movieService.GetTrendingMovies(page);
             if (movies?.Movies == null || !movies.Movies.Any())
                 return View(new List<Movie>());
@@ -121,6 +126,7 @@ namespace Moviest.Controllers
 
         public async Task<IActionResult> MoviesByGenre(int id, int page = 1)
         {
+            page = Math.Max(1, page);
             var moviesTask = _movieService.GetMoviesByGenre(id, page);
             var genreNameTask = _movieService.GetGenreNameById(id);
 
