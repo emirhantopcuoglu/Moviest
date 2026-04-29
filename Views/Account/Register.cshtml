@@ -1,0 +1,72 @@
+@model Moviest.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Kayıt Ol";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-page">
+    <div class="auth-card">
+        <span class="auth-logo"><i class="bi bi-camera-reels-fill"></i> Moviest</span>
+        <h1 class="auth-title">Hesap oluştur</h1>
+        <p class="auth-subtitle">Ücretsiz kayıt ol, filmleri keşfetmeye başla.</p>
+
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState[""] != null)
+        {
+            <div class="alert-app alert-danger-app">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span>@ViewData.ModelState[""]!.Errors.FirstOrDefault()?.ErrorMessage</span>
+            </div>
+        }
+
+        <form asp-action="Register" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-field">
+                <label asp-for="Username" class="form-label">Kullanıcı Adı</label>
+                <div class="input-wrap">
+                    <i class="bi bi-person"></i>
+                    <input asp-for="Username" class="form-control" placeholder="kullaniciadi" autocomplete="username" />
+                </div>
+                <span asp-validation-for="Username" class="field-error"></span>
+            </div>
+
+            <div class="mb-field">
+                <label asp-for="Email" class="form-label">E-posta</label>
+                <div class="input-wrap">
+                    <i class="bi bi-envelope"></i>
+                    <input asp-for="Email" type="email" class="form-control" placeholder="ornek@email.com" autocomplete="email" />
+                </div>
+                <span asp-validation-for="Email" class="field-error"></span>
+            </div>
+
+            <div class="mb-field">
+                <label asp-for="Password" class="form-label">Şifre <small style="color:var(--text-muted);font-weight:400;">(en az 8 karakter, rakam içermeli)</small></label>
+                <div class="input-wrap">
+                    <i class="bi bi-lock"></i>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" autocomplete="new-password" />
+                </div>
+                <span asp-validation-for="Password" class="field-error"></span>
+            </div>
+
+            <div class="mb-field">
+                <label asp-for="ConfirmPassword" class="form-label">Şifre Tekrar</label>
+                <div class="input-wrap">
+                    <i class="bi bi-lock-fill"></i>
+                    <input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="••••••••" autocomplete="new-password" />
+                </div>
+                <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+            </div>
+
+            <button type="submit" class="btn-accent" style="width:100%;justify-content:center;margin-top:0.5rem;">
+                Hesap Oluştur <i class="bi bi-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Zaten hesabın var mı? <a asp-controller="Account" asp-action="Login">Giriş yap</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

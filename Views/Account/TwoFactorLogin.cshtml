@@ -1,0 +1,57 @@
+@model Moviest.Models.TwoFactorLoginViewModel
+@{
+    ViewData["Title"] = "İki Faktörlü Doğrulama";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-page">
+    <div class="auth-card">
+        <a class="auth-logo" href="/"><i class="bi bi-camera-reels-fill"></i> Moviest</a>
+        <h1 class="auth-title">İki Faktörlü Doğrulama</h1>
+        <p class="auth-subtitle">Authenticator uygulamanızdaki 6 haneli kodu girin.</p>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert-app alert-danger-app" style="margin-bottom:1rem;">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <div>
+                    @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div>@err.ErrorMessage</div>
+                    }
+                </div>
+            </div>
+        }
+
+        <form asp-action="TwoFactorLogin" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="RememberMe" />
+
+            <div class="mb-field">
+                <label class="form-label" asp-for="Code">Doğrulama Kodu</label>
+                <div class="input-wrap">
+                    <i class="bi bi-shield-lock"></i>
+                    <input asp-for="Code" class="form-control" placeholder="123456"
+                           autocomplete="one-time-code" inputmode="numeric"
+                           maxlength="7" autofocus />
+                </div>
+                <span asp-validation-for="Code" class="field-error"><i class="bi bi-exclamation-circle"></i> <span></span></span>
+            </div>
+
+            <div class="mb-field">
+                <label class="form-check-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                    <input asp-for="RememberMachine" class="form-check-input" type="checkbox" />
+                    Bu cihazı hatırla (30 gün)
+                </label>
+            </div>
+
+            <button type="submit" class="btn-accent" style="width:100%;justify-content:center;margin-top:0.5rem;">
+                <i class="bi bi-shield-check"></i> Doğrula
+            </button>
+        </form>
+
+        <div class="auth-footer" style="margin-top:1.25rem;">
+            <a href="/Account/Login"><i class="bi bi-arrow-left"></i> Giriş sayfasına dön</a>
+        </div>
+    </div>
+</div>

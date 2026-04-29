@@ -1,0 +1,61 @@
+@model Moviest.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Giriş Yap";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-page">
+    <div class="auth-card">
+        <span class="auth-logo"><i class="bi bi-camera-reels-fill"></i> Moviest</span>
+        <h1 class="auth-title">Tekrar hoş geldin</h1>
+        <p class="auth-subtitle">Hesabına giriş yap ve keşfetmeye devam et.</p>
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert-app alert-danger-app">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                <span>@(ViewData.ModelState[""]?.Errors.FirstOrDefault()?.ErrorMessage ?? "Giriş başarısız.")</span>
+            </div>
+        }
+
+        <form asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-field">
+                <label asp-for="Username" class="form-label">Kullanıcı Adı</label>
+                <div class="input-wrap">
+                    <i class="bi bi-person"></i>
+                    <input asp-for="Username" class="form-control" placeholder="kullaniciadi" autocomplete="username" />
+                </div>
+                <span asp-validation-for="Username" class="field-error"></span>
+            </div>
+
+            <div class="mb-field">
+                <label asp-for="Password" class="form-label">Şifre</label>
+                <div class="input-wrap">
+                    <i class="bi bi-lock"></i>
+                    <input asp-for="Password" type="password" class="form-control" placeholder="••••••••" autocomplete="current-password" />
+                </div>
+                <span asp-validation-for="Password" class="field-error"></span>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+                <div class="form-check" style="margin:0;">
+                    <input asp-for="RememberMe" type="checkbox" class="form-check-input" id="rememberMe" />
+                    <label asp-for="RememberMe" class="form-check-label" for="rememberMe">Beni hatırla</label>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-accent" style="width:100%;justify-content:center;">
+                Giriş Yap <i class="bi bi-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Hesabın yok mu? <a asp-controller="Account" asp-action="Register">Ücretsiz kayıt ol</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

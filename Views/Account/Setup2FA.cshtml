@@ -1,0 +1,86 @@
+@model Moviest.Models.Setup2FAViewModel
+@{
+    ViewData["Title"] = "2FA Kurulumu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div style="padding:2rem 1.5rem;max-width:620px;margin:0 auto;">
+    <div class="page-title">
+        <i class="bi bi-shield-lock"></i> İki Faktörlü Doğrulama Kurulumu
+    </div>
+
+    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Any()))
+    {
+        <div class="alert-app alert-danger-app" style="margin-bottom:1.25rem;">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <div>
+                @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@err.ErrorMessage</div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="card-dark" style="margin-bottom:1.25rem;">
+        <div class="section-title"><i class="bi bi-phone"></i> Adım 1 — Uygulama Kur</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);line-height:1.65;margin-bottom:0.75rem;">
+            Google Authenticator, Microsoft Authenticator veya Authy gibi bir uygulama indirin.
+        </p>
+
+        <div class="section-title" style="margin-top:1.25rem;"><i class="bi bi-qr-code"></i> Adım 2 — QR Kodu Tara</div>
+        <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
+            <div>
+                <canvas id="qrCanvas" style="border-radius:var(--radius-sm);background:#fff;padding:8px;display:block;"></canvas>
+            </div>
+            <div style="flex:1;min-width:200px;">
+                <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.75rem;">
+                    QR kodu okuyamıyorsanız aşağıdaki anahtarı manuel olarak girin:
+                </p>
+                <div style="background:var(--bg-surface);border:1px solid var(--border-hover);border-radius:var(--radius-sm);padding:10px 14px;font-family:monospace;font-size:0.88rem;letter-spacing:0.1em;color:var(--accent);word-break:break-all;">
+                    @Model.AuthenticatorKey
+                </div>
+                <p style="font-size:0.76rem;color:var(--text-muted);margin-top:8px;">
+                    Uygulamada hesap eklerken "Zaman tabanlı (TOTP)" seçeneğini kullanın.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-dark">
+        <div class="section-title"><i class="bi bi-check2-circle"></i> Adım 3 — Kodu Doğrula</div>
+        <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem;">
+            Uygulamada görünen 6 haneli kodu girin ve etkinleştirin.
+        </p>
+
+        <form asp-action="Setup2FA" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-field" style="max-width:280px;">
+                <label class="form-label" asp-for="Code">Doğrulama Kodu</label>
+                <div class="input-wrap">
+                    <i class="bi bi-shield-lock"></i>
+                    <input asp-for="Code" class="form-control" placeholder="123456"
+                           inputmode="numeric" maxlength="7" autocomplete="one-time-code" autofocus />
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <button type="submit" class="btn-accent">
+                    <i class="bi bi-shield-check"></i> Etkinleştir
+                </button>
+                <a href="/Account/Profile" class="btn-ghost">
+                    <i class="bi bi-arrow-left"></i> İptal
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+const totpUri = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TotpUri));
+QRCode.toCanvas(document.getElementById('qrCanvas'), totpUri, { width: 180, margin: 1 }, function(err) {
+    if (err) console.error('QR oluşturulamadı:', err);
+});
+</script>
+}

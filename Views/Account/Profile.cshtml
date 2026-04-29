@@ -1,0 +1,93 @@
+@model Moviest.Models.ProfileViewModel
+@{
+    ViewData["Title"] = "Profilim";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div style="padding:2rem 1.5rem;max-width:600px;margin:0 auto;">
+    <div class="page-title">
+        <i class="bi bi-person-circle"></i> Profilim
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-app alert-success-app" style="margin-bottom:1.25rem;">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-app alert-danger-app" style="margin-bottom:1.25rem;">
+            <i class="bi bi-exclamation-circle-fill"></i> @TempData["Error"]
+        </div>
+    }
+
+    <div class="profile-header-card">
+        <div class="profile-avatar">
+            @(Model.Username?.Substring(0, 1).ToUpper() ?? "U")
+        </div>
+        <div>
+            <div class="profile-name">@Model.Username</div>
+            <div class="profile-email">@Model.Email</div>
+            @if (Model.TwoFactorEnabled)
+            {
+                <div style="font-size:0.72rem;color:var(--success);margin-top:4px;display:flex;align-items:center;gap:4px;">
+                    <i class="bi bi-shield-fill-check"></i> 2FA Etkin
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="profile-actions-card">
+        <a class="profile-action-link" href="/movies">
+            <i class="bi bi-film"></i>
+            <span>Filmlere Göz At</span>
+            <i class="bi bi-chevron-right" style="margin-left:auto;color:var(--text-muted);font-size:0.75rem;"></i>
+        </a>
+        <a class="profile-action-link" href="/watchlist">
+            <i class="bi bi-bookmark"></i>
+            <span>İzleme Listem</span>
+            <i class="bi bi-chevron-right" style="margin-left:auto;color:var(--text-muted);font-size:0.75rem;"></i>
+        </a>
+        <a class="profile-action-link" asp-controller="Account" asp-action="ChangePassword">
+            <i class="bi bi-key"></i>
+            <span>Şifre Değiştir</span>
+            <i class="bi bi-chevron-right" style="margin-left:auto;color:var(--text-muted);font-size:0.75rem;"></i>
+        </a>
+
+        <div class="divider" style="margin:4px 0;"></div>
+
+        @if (Model.TwoFactorEnabled)
+        {
+            <div style="display:flex;align-items:center;gap:0;">
+                <a class="profile-action-link" asp-controller="Account" asp-action="Setup2FA" style="flex:1;">
+                    <i class="bi bi-shield-lock" style="color:var(--success);"></i>
+                    <span>İki Faktörlü Doğrulama</span>
+                    <span style="margin-left:auto;font-size:0.72rem;color:var(--success);font-weight:600;padding:2px 8px;background:var(--success-light);border-radius:20px;">Etkin</span>
+                </a>
+                <form asp-controller="Account" asp-action="DisableTwoFactor" method="post" style="margin-left:4px;">
+                    <button type="submit" class="btn-danger-soft" style="font-size:0.75rem;padding:5px 10px;" onclick="return confirm('2FA devre dışı bırakılsın mı?')">
+                        <i class="bi bi-shield-x"></i> Kapat
+                    </button>
+                </form>
+            </div>
+        }
+        else
+        {
+            <a class="profile-action-link" asp-controller="Account" asp-action="Setup2FA">
+                <i class="bi bi-shield-lock"></i>
+                <span>İki Faktörlü Doğrulama</span>
+                <span style="margin-left:auto;font-size:0.72rem;color:var(--text-muted);font-weight:600;padding:2px 8px;background:var(--bg-surface);border-radius:20px;">Devre Dışı</span>
+                <i class="bi bi-chevron-right" style="margin-left:6px;color:var(--text-muted);font-size:0.75rem;"></i>
+            </a>
+        }
+
+        <div class="divider" style="margin:4px 0;"></div>
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="profile-action-link" style="width:100%;background:none;border:none;cursor:pointer;color:var(--danger);">
+                <i class="bi bi-box-arrow-right" style="color:var(--danger);"></i>
+                <span>Çıkış Yap</span>
+            </button>
+        </form>
+    </div>
+</div>
