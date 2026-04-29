@@ -1,209 +1,178 @@
-@model MovieDetails
+@model Moviest.Models.MovieDetails
 @{
+    ViewData["Title"] = Model.Title;
     Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
 }
-<link href="~/css/details.css" rel="stylesheet">
-<div class="container my-5">
-    <h1 class="text-center mb-4 fw-bold">@Model.Title</h1>
 
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm rounded-4">
-                <img src="@(string.IsNullOrEmpty(Model.Poster) 
-                    ? "https://via.placeholder.com/500x750?text=No+Image" 
-                    : $"https://image.tmdb.org/t/p/w500{Model.Poster}")" 
-                    class="card-img-top rounded-4" alt="@Model.Title">
-            </div>
-        </div>
-
-        <div class="col-md-8">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <h6 class="fw-bold text-muted">Vizyon Tarihi</h6>
-                        <p class="fs-5">
-                            @(DateTime.TryParse(Model.ReleaseDate, out var parsedDate) 
-                                ? parsedDate.ToString("dd/MM/yyyy") 
-                                : "-")
-                        </p>
-                    </div>
-
-                    <div class="mb-3">
-                        <span class="rating-tag @GetRatingClass(Model.VoteAverage)">
-                                @if(Model.VoteAverage == null || Model.VoteAverage == 0)
-                                {
-                                    <i class="bi bi-star-fill">
-                                        -
-                                    </i>
-                                }
-                                else
-                                {
-                                    <i class="bi bi-star-fill">
-                                        @Model.VoteAverage.ToString("F1")
-                                    </i> 
-                                }  
-                        </span>
-                    </div>
-
-                    <div class="mb-3">
-                        <h4 class="fw-bold">Tür</h6>
-                        <div>
-                            @if (Model.Genres != null && Model.Genres.Any())
-                            {
-                                foreach (var genre in Model.Genres)
-                                {
-                                    <span class="genre-tag">@genre.Name</span>
-                                }
-                            }
-                            else
-                            {
-                                <span>-</span>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <h4 class="fw-bold">Film Hakkında</h4>
-                        <div>
-                            @if (Model.Overview != null && Model.Overview.Any())
-                            {
-                                <p class="text-muted fs-6">@Model.Overview</p>
-                            }
-                            else
-                            {
-                                <span>Bu film hakkında bilgi bulunamadı.</span>
-                            }
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <h4 class="fw-bold">Oyuncu Kadrosu</h4>
-                        <div class="row g-3">
-                            @if (Model.Cast != null && Model.Cast.Any())
-                            {
-                                @foreach (var c in Model.Cast.Take(5)) // İlk 5 oyuncuyu göster
-                                {
-                                    <div class="col-6 col-md-2 text-center">
-                                        <!-- Oyuncu Fotoğrafı -->
-                                        <img src="@(string.IsNullOrEmpty(c.ProfilePath) 
-                                            ? "https://via.placeholder.com/300x450?text=No+Image" 
-                                            : $"https://image.tmdb.org/t/p/w300{c.ProfilePath}")" 
-                                            class="img-fluid rounded-4 shadow-sm cast-image" alt="@c.Name">
-                                        
-                                        <!-- Oyuncu Adı (Sabit Genişlik) -->
-                                        <h6 class="mt-2">
-                                            <a href="@Url.Action("ActorDetails", "Movies", new { id = c.Id })" 
-                                               class="btn btn-warning btn-sm text-dark fw-bold rounded-pill cast-button">
-                                                @c.Name
-                                            </a>
-                                        </h6>
-                                        
-                                        <!-- Oyuncu Karakteri -->
-                                        <p class="text-muted small">(@c.Character)</p>
-                                    </div>
-                                }
-                            }
-                            else
-                            {
-                                <div class="col-12">
-                                    <p class="text-muted">Oyuncu kadrosu hakkında bilgi bulunamadı.</p>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="details-layout">
+    <div class="details-poster-col">
+        <img src="@(string.IsNullOrEmpty(Model.Poster) ? "https://via.placeholder.com/500x750?text=Görsel+Yok" : $"https://image.tmdb.org/t/p/w500{Model.Poster}")"
+             alt="@Model.Title" />
     </div>
 
-    <div class="row mt-5">
-        <h4 class="fw-bold mb-3">Fragmanlar</h4>
-        @if (Model.Videos != null && Model.Videos.Any())
-        {
-            <div class="col-12">
-                <div class="row g-4">
-                    @foreach (var video in Model.Videos)
-                    {
-                        <div class="col-md-6">
-                            <div class="ratio ratio-16x9 shadow-sm rounded-4">
-                                <iframe 
-                                    src="https://www.youtube.com/embed/@video.Key" 
-                                    frameborder="0" 
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                    allowfullscreen>
-                                </iframe>
-                            </div>
-                            <p class="mt-2 text-center fw-bold">@video.Name</p>
-                        </div>
-                    }
-                </div>
+    <div class="details-info-col">
+        <h1 class="details-title">@Model.Title</h1>
+
+        <div class="details-meta">
+            <div class="details-meta-item">
+                <i class="bi bi-calendar3"></i>
+                @(DateTime.TryParse(Model.ReleaseDate, out var d) ? d.ToString("dd MMM yyyy") : "-")
             </div>
-        }
-        else
+            @if (Model.VoteAverage > 0)
+            {
+                <div class="details-meta-item">
+                    <span class="rating-badge @GetRatingClass(Model.VoteAverage)">
+                        <i class="bi bi-star-fill"></i> @Model.VoteAverage.ToString("F1")
+                    </span>
+                </div>
+            }
+        </div>
+
+        <div style="margin-bottom:1rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            @if (Model.Genres?.Any() == true)
+            {
+                @foreach (var genre in Model.Genres)
+                {
+                    <span class="genre-tag">@genre.Name</span>
+                }
+            }
+            <button id="wl-toggle-btn" class="btn-outline-accent" onclick="toggleDetailsWl()" style="margin-left:auto;">
+                <i class="bi bi-bookmark" id="wl-icon"></i>
+                <span id="wl-text">İzleme Listesine Ekle</span>
+            </button>
+        </div>
+
+        <div class="section-title"><i class="bi bi-card-text"></i> Film Hakkında</div>
+        <p class="details-overview">
+            @(string.IsNullOrWhiteSpace(Model.Overview)
+                ? "Bu film için Türkçe açıklama bulunamadı."
+                : Model.Overview)
+        </p>
+
+        @if (Model.Cast?.Any() == true)
         {
-            <span>Bu film için fragman bulunamadı.</span>
+            <div class="section-title"><i class="bi bi-people"></i> Oyuncu Kadrosu</div>
+            <div class="cast-grid">
+                @foreach (var actor in Model.Cast.Take(8))
+                {
+                    <a href="@Url.Action("ActorDetails", "Movies", new { id = actor.Id })" style="text-decoration:none;">
+                        <div class="actor-card">
+                            <img src="@(string.IsNullOrEmpty(actor.ProfilePath) ? "https://via.placeholder.com/300x450?text=?" : $"https://image.tmdb.org/t/p/w300{actor.ProfilePath}")"
+                                 alt="@actor.Name" loading="lazy" />
+                            <div class="actor-card-info">
+                                <div class="actor-card-name">@actor.Name</div>
+                                <div class="actor-card-char">@actor.Character</div>
+                            </div>
+                        </div>
+                    </a>
+                }
+            </div>
         }
     </div>
 </div>
 
-<div class="row mt-5">
-    <h4 class="fw-bold mb-3">Benzer Filmler</h4>
-    @if (Model.SimilarMovies != null && Model.SimilarMovies.Any())
-    {
-        <div class="position-relative">
-            <div id="similarMoviesCarousel" class="carousel slide" data-bs-ride="carousel">
-                <div class="carousel-inner">
-                    @for (int i = 0; i < Model.SimilarMovies.Count; i += 4) // 4 film bir satırda gösterilecek
-                    {
-                        <div class="carousel-item @(i == 0 ? "active" : "")">
-                            <div class="row g-3">
-                                @foreach (var movie in Model.SimilarMovies.Skip(i).Take(4))
-                                {
-                                    <div class="col-md-3">
-                                        <div class="card border-0 shadow-sm rounded-4">
-                                            <img src="@(string.IsNullOrEmpty(movie.Poster) 
-                                                ? "https://via.placeholder.com/500x750?text=No+Image" 
-                                                : $"https://image.tmdb.org/t/p/w500{movie.Poster}")" 
-                                                class="card-img-top rounded-4" alt="@movie.Title">
-                                            <div class="card-body text-center">
-                                                <h6 class="card-title text-truncate">@movie.Title</h6>
-                                                <a href="@Url.Action("Details", "Movies" , new { id=movie.Id })"
-                                            class="btn btn-outline-primary btn-sm rounded-pill">Detaylar</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    }
+@if (Model.Videos?.Any() == true)
+{
+    <div class="mb-section">
+        <div class="section-title"><i class="bi bi-play-circle"></i> Fragmanlar</div>
+        <div class="trailer-grid">
+            @foreach (var video in Model.Videos.Take(4))
+            {
+                <div>
+                    <div class="ratio ratio-16x9" style="border-radius:var(--radius);overflow:hidden;">
+                        <iframe src="https://www.youtube.com/embed/@video.Key"
+                                title="@video.Name"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen></iframe>
+                    </div>
+                    <p class="trailer-label">@video.Name</p>
                 </div>
-                <button class="carousel-control-prev custom-carousel-control" type="button" data-bs-target="#similarMoviesCarousel" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Önceki</span>
-                </button>
-                <button class="carousel-control-next custom-carousel-control" type="button" data-bs-target="#similarMoviesCarousel" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Sonraki</span>
-                </button>
-            </div>
+            }
         </div>
-    }
-    else
-    {
-        <p class="text-muted">Benzer film bulunamadı.</p>
-    }
-</div>
+    </div>
+}
+
+@if (Model.SimilarMovies?.Any() == true)
+{
+    <div class="mb-section">
+        <div class="section-title"><i class="bi bi-collection"></i> Benzer Filmler</div>
+        <div class="similar-grid">
+            @foreach (var movie in Model.SimilarMovies.Take(12))
+            {
+                <div class="movie-card">
+                    <div class="poster-wrap">
+                        <img src="@(string.IsNullOrEmpty(movie.Poster) ? "https://via.placeholder.com/500x750?text=Görsel+Yok" : $"https://image.tmdb.org/t/p/w342{movie.Poster}")"
+                             alt="@movie.Title" loading="lazy" />
+                        <div class="poster-overlay">
+                            <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="overlay-btn">Detaylar</a>
+                        </div>
+                    </div>
+                    <div class="card-info">
+                        <div class="card-title" title="@movie.Title">@movie.Title</div>
+                        <div class="card-year">@(DateTime.TryParse(movie.ReleaseDate, out var y) ? y.ToString("yyyy") : "-")</div>
+                        <div class="card-footer-row">
+                            <span class="rating-badge @GetRatingClass(movie.VoteAverage)">
+                                <i class="bi bi-star-fill"></i> @movie.VoteAverage.ToString("F1")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
 
 @functions {
-    private string GetRatingClass(double vote)
-    {
-        if (vote >= 9) return "rating-high";
-        if (vote >= 7) return "rating-good";
-        if (vote >= 5) return "rating-average";
-        if (vote >= 4) return "rating-poor";
-        if (vote == 0) return "unknown";
-        return "rating-bad";
+    string GetRatingClass(double v) => v switch {
+        >= 9 => "rating-high",
+        >= 7 => "rating-good",
+        >= 5 => "rating-avg",
+        >= 4 => "rating-poor",
+        > 0  => "rating-bad",
+        _    => "rating-unknown"
+    };
+}
+
+@section Scripts {
+<script>
+(async function() {
+    try {
+        const resp = await fetch('/Watchlist/IsInList?movieId=@Model.Id');
+        const data = await resp.json();
+        if (data.inList) setWlState(true);
+    } catch {}
+})();
+
+function setWlState(inList) {
+    const btn = document.getElementById('wl-toggle-btn');
+    if (!btn) return;
+    if (inList) {
+        btn.className = 'btn-accent';
+        document.getElementById('wl-icon').className = 'bi bi-bookmark-fill';
+        document.getElementById('wl-text').textContent = 'İzleme Listesinde';
+    } else {
+        btn.className = 'btn-outline-accent';
+        document.getElementById('wl-icon').className = 'bi bi-bookmark';
+        document.getElementById('wl-text').textContent = 'İzleme Listesine Ekle';
     }
 }
 
-
+async function toggleDetailsWl() {
+    const btn = document.getElementById('wl-toggle-btn');
+    const inList = btn.classList.contains('btn-accent');
+    const csrf = document.querySelector('#__csrf input[name="__RequestVerificationToken"]').value;
+    const fd = new FormData();
+    fd.append('__RequestVerificationToken', csrf);
+    fd.append('movieId', '@Model.Id');
+    if (!inList) {
+        fd.append('movieTitle', @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Title ?? "")));
+        fd.append('moviePoster', '@(Model.Poster ?? "")');
+        fd.append('movieYear', '@(DateTime.TryParse(Model.ReleaseDate, out var yd) ? yd.Year.ToString() : "")');
+    }
+    const url = inList ? '/Watchlist/Remove' : '/Watchlist/Add';
+    const resp = await fetch(url, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd });
+    if (resp.ok) setWlState(!inList);
+}
+</script>
+}

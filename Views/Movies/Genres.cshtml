@@ -1,76 +1,51 @@
-@model GenreListResponse
+@model Moviest.Models.GenreListResponse
 @{
+    ViewData["Title"] = "Film Kategorileri";
     Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Film Türleri</title>
-</head>
-<body>
-    <header>
-        🍿 Film Türlerini Keşfedin
-    </header>
 
-    <div class="container">
-        @if (Model?.Genres == null || !Model.Genres.Any())
+<div class="page-title"><i class="bi bi-grid"></i> Film Kategorileri</div>
+
+@if (Model?.Genres == null || !Model.Genres.Any())
+{
+    <div class="alert-app alert-info-app">
+        <i class="bi bi-info-circle-fill"></i> Kategori bulunamadı.
+    </div>
+}
+else
+{
+    <div class="genres-grid">
+        @foreach (var genre in Model.Genres)
         {
-            <p>Hiçbir tür bulunamadı.</p>
-        }
-        else
-        {
-            <div class="genre-grid">
-                @foreach (var genre in Model.Genres)
-                {
-                    <div class="genre-card">
-
-                        <div class="genre-header">
-                            <div class="genre-icon">
-                                @GetGenreEmoji(genre.Name)
-                            </div>
-                            @genre.Name
-                        </div>
-
-                        <div class="genre-body">
-                            <a href="@Url.Action("MoviesByGenre", "Movies", new { id = genre.Id })">
-                                Keşfet
-                            </a>
-                        </div>
-                    </div>
-                }
-            </div>
+            <a href="@Url.Action("MoviesByGenre", "Movies", new { id = genre.Id })" class="genre-card-item">
+                <span class="genre-emoji">@GetGenreEmoji(genre.Name)</span>
+                <div class="genre-name">@genre.Name</div>
+            </a>
         }
     </div>
-</body>
-</html>
-@functions {
-    private string GetGenreEmoji(string genreName)
-    {
-        return genreName.ToLower() switch
-        {
-            "aksiyon" => "🔥",
-            "komedi" => "😂", 
-            "dram" => "🎭", 
-            "korku" => "👻", 
-            "romantik" => "❤️", 
-            "bilim-kurgu" => "🚀", 
-            "macera" => "🌍",
-            "fantastik" => "🧙‍♂️", 
-            "animasyon" => "🎨", 
-            "suç" => "🕵️‍♂️", 
-            "belgesel" => "📚", 
-            "aile" => "👨‍👩‍👧‍👦", 
-            "tarih" => "🏰", 
-            "müzik" => "🎵", 
-            "gizem" => "🕵️‍♀️", 
-            "tv film" => "📺", 
-            "gerilim" => "😱", 
-            "savaş" => "⚔️", 
-            "vahşi batı" => "🤠",
-            _ => "🎬" 
-        };
-    }
 }
-<link href="/css/genres.css" rel="stylesheet">
+
+@functions {
+    string GetGenreEmoji(string name) => name?.ToLower() switch {
+        "aksiyon"    => "💥",
+        "komedi"     => "😂",
+        "dram"       => "🎭",
+        "korku"      => "👻",
+        "romantik"   => "❤️",
+        "bilim-kurgu"=> "🚀",
+        "macera"     => "🌍",
+        "fantastik"  => "🧙",
+        "animasyon"  => "🎨",
+        "suç"        => "🕵️",
+        "belgesel"   => "📚",
+        "aile"       => "👨‍👩‍👧",
+        "tarih"      => "🏰",
+        "müzik"      => "🎵",
+        "gizem"      => "🔍",
+        "tv film"    => "📺",
+        "gerilim"    => "😱",
+        "savaş"      => "⚔️",
+        "vahşi batı" => "🤠",
+        _            => "🎬"
+    };
+}

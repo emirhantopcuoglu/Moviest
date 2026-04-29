@@ -1,91 +1,96 @@
-@model ActorDetailsViewModel
+@model Moviest.Models.ActorDetailsViewModel
 @{
+    ViewData["Title"] = Model.Actor.Name;
     Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
 }
-<link href="~/css/actorDetails.css" rel="stylesheet">
-<div class="container my-5">
-    <div class="row g-4 align-items-center">
-        <div class="col-md-4 text-center">
-            <img src="@(string.IsNullOrEmpty(Model.Actor.ProfilePath) 
-                ? "https://via.placeholder.com/300x450?text=No+Image" 
-                : $"https://image.tmdb.org/t/p/w300{Model.Actor.ProfilePath}")" 
-                class="img-fluid rounded-4 shadow-sm" alt="@Model.Actor.Name">
-        </div>
-        <div class="col-md-8">
-            <h1 class="fw-bold mb-3">@Model.Actor.Name</h1>
-            <p class="text-muted">@(!string.IsNullOrEmpty(Model.Actor.Biography) 
-                ? Model.Actor.Biography 
-                : "Bu aktör hakkında bilgi bulunamadı.")</p>
-            <ul class="list-unstyled">
-                <li><strong>Doğum Tarihi:</strong> @(string.IsNullOrEmpty(Model.Actor.Birthday) ? "-" : Model.Actor.Birthday)</li>
-                @if (!string.IsNullOrEmpty(Model.Actor.Deathday))
-                {
-                    <li><strong>Ölüm Tarihi:</strong> @Model.Actor.Deathday</li>
-                }
-                <li><strong>Doğum Yeri:</strong> @(string.IsNullOrEmpty(Model.Actor.PlaceOfBirth) ? "-" : Model.Actor.PlaceOfBirth)</li>
-            </ul>
-        </div>
-    </div>
 
-    <div class="row mt-5">
-        <h4 class="fw-bold mb-3">Yer Aldığı Filmler</h4>
-        <div class="row row-cols-2 row-cols-md-4 g-4">
-            @if (Model.Movies != null && Model.Movies.Any())
+<div class="actor-page-header">
+    <div class="actor-page-img">
+        <img src="@(string.IsNullOrEmpty(Model.Actor.ProfilePath) ? "https://via.placeholder.com/300x450?text=Görsel+Yok" : $"https://image.tmdb.org/t/p/w300{Model.Actor.ProfilePath}")"
+             alt="@Model.Actor.Name" />
+    </div>
+    <div class="actor-page-info">
+        <h1 class="actor-page-name">@Model.Actor.Name</h1>
+
+        <div class="actor-meta-row">
+            @if (!string.IsNullOrEmpty(Model.Actor.Birthday))
             {
-                @foreach (var movie in Model.Movies)
-                {
-                    <div class="col-md-3">
-                        <div class="card h-100 shadow-lg rounded-lg border-0">
-        
-                            <img src="@(string.IsNullOrEmpty(movie.Poster) 
-                                    ? " https://via.placeholder.com/500x750?text=No+Image" :
-                                $"https://image.tmdb.org/t/p/w500{movie.Poster}")" class="card-img-top rounded-top"
-                                alt="@movie.Title">
-        
-                            <div class="card-body">
-                                <h5 class="card-title text-truncate">@movie.Title</h5>
-        
-                                <p class="card-text text-muted small mb-1">
-                                    <i class="bi bi-calendar"></i>
-                                    @(DateTime.TryParse(movie.ReleaseDate, out var parsedDate)
-                                    ? parsedDate.ToString("yyyy")
-                                    : "-")
-                                </p>
-                            </div>
-        
-                            <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
-        
-                                <span class="rating-tag @GetRatingClass(movie.VoteAverage)">
-                                    <i class="bi bi-star-fill">
-                                        @movie.VoteAverage.ToString("F1")
-                                    </i>
-                                </span>
-        
-                                <a href="@Url.Action("Details", "Movies" , new { id=movie.Id })"
-                                    class="btn btn-outline-warning btn-sm rounded-pill">Detaylar</a>
-                            </div>
-                        </div>
-                    </div>
-                }
+                <span class="actor-meta-item">
+                    <i class="bi bi-calendar-heart"></i>
+                    @Model.Actor.Birthday
+                </span>
             }
-            else
+            @if (!string.IsNullOrEmpty(Model.Actor.Deathday))
             {
-                <div class="col-12">
-                    <p class="text-muted text-center">Bu aktörün yer aldığı film bilgisi bulunamadı.</p>
-                </div>
+                <span class="actor-meta-item">
+                    <i class="bi bi-x-circle"></i>
+                    @Model.Actor.Deathday
+                </span>
+            }
+            @if (!string.IsNullOrEmpty(Model.Actor.PlaceOfBirth))
+            {
+                <span class="actor-meta-item">
+                    <i class="bi bi-geo-alt"></i>
+                    @Model.Actor.PlaceOfBirth
+                </span>
             }
         </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Actor.Biography))
+        {
+            <p class="actor-bio">@Model.Actor.Biography</p>
+        }
+        else
+        {
+            <p class="actor-bio" style="color:var(--text-muted);font-style:italic;">
+                Bu aktör hakkında Türkçe biyografi bulunamadı.
+            </p>
+        }
     </div>
 </div>
 
+@if (Model.Movies?.Any() == true)
+{
+    <div class="section-title" style="margin-top:1.5rem;">
+        <i class="bi bi-film"></i> Yer Aldığı Filmler (@Model.Movies.Count)
+    </div>
+    <div class="movie-grid">
+        @foreach (var movie in Model.Movies.Where(m => !string.IsNullOrEmpty(m.Poster)).Take(40))
+        {
+            <div class="movie-card">
+                <div class="poster-wrap">
+                    <img src="@(string.IsNullOrEmpty(movie.Poster) ? "https://via.placeholder.com/500x750?text=Görsel+Yok" : $"https://image.tmdb.org/t/p/w500{movie.Poster}")"
+                         alt="@movie.Title" loading="lazy" />
+                    <div class="poster-overlay">
+                        <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="overlay-btn">Detaylar</a>
+                    </div>
+                    <button class="card-bookmark-btn"
+                            onclick="quickAdd(this)"
+                            data-movie-id="@movie.Id"
+                            data-title="@movie.Title"
+                            data-poster="@(movie.Poster ?? "")"
+                            data-year="@(DateTime.TryParse(movie.ReleaseDate, out var abd) ? abd.Year.ToString() : "")"
+                            title="İzleme listesine ekle">
+                        <i class="bi bi-bookmark-plus"></i>
+                    </button>
+                </div>
+                <div class="card-info">
+                    <div class="card-title" title="@movie.Title">@movie.Title</div>
+                    <div class="card-year">@(DateTime.TryParse(movie.ReleaseDate, out var d) ? d.ToString("yyyy") : "-")</div>
+                    <div class="card-footer-row">
+                        <span class="rating-badge @GetRatingClass(movie.VoteAverage)">
+                            <i class="bi bi-star-fill"></i> @movie.VoteAverage.ToString("F1")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
 @functions {
-    private string GetRatingClass(double vote)
-    {
-        if (vote >= 9) return "rating-high";
-        if (vote >= 7) return "rating-good";
-        if (vote >= 5) return "rating-average";
-        if (vote >= 4) return "rating-poor";
-        if (vote == 0) return "unknown";
-        return "rating-bad";
-    }
+    string GetRatingClass(double v) => v switch {
+        >= 9 => "rating-high", >= 7 => "rating-good", >= 5 => "rating-avg",
+        >= 4 => "rating-poor", > 0 => "rating-bad", _ => "rating-unknown"
+    };
 }
