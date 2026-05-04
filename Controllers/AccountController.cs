@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Moviest.Models;
+using QRCoder;
 
 namespace Moviest.Controllers
 {
@@ -166,7 +167,11 @@ namespace Moviest.Controllers
             var formattedKey = FormatAuthenticatorKey(key!);
             var totpUri = $"otpauth://totp/{Uri.EscapeDataString("Moviest")}:{Uri.EscapeDataString(email)}?secret={key}&issuer={Uri.EscapeDataString("Moviest")}&digits=6";
 
-            return View(new Setup2FAViewModel { AuthenticatorKey = formattedKey, TotpUri = totpUri });
+            return View(new Setup2FAViewModel
+            {
+                AuthenticatorKey = formattedKey,
+                QrCodeDataUrl = GenerateQrCodeDataUrl(totpUri)
+            });
         }
 
         [HttpPost]
@@ -179,10 +184,7 @@ namespace Moviest.Controllers
 
             if (!ModelState.IsValid)
             {
-                var key = await _userManager.GetAuthenticatorKeyAsync(user);
-                var email = await _userManager.GetEmailAsync(user) ?? user.UserName ?? "user";
-                model.AuthenticatorKey = FormatAuthenticatorKey(key ?? "");
-                model.TotpUri = $"otpauth://totp/{Uri.EscapeDataString("Moviest")}:{Uri.EscapeDataString(email)}?secret={key}&issuer={Uri.EscapeDataString("Moviest")}&digits=6";
+                await RepopulateQrModel(user, model);
                 return View(model);
             }
 
@@ -193,10 +195,7 @@ namespace Moviest.Controllers
             if (!isValid)
             {
                 ModelState.AddModelError(string.Empty, "Kod doğrulanamadı. Authenticator uygulamanızın kodu doğru olduğundan emin olun.");
-                var key = await _userManager.GetAuthenticatorKeyAsync(user);
-                var email = await _userManager.GetEmailAsync(user) ?? user.UserName ?? "user";
-                model.AuthenticatorKey = FormatAuthenticatorKey(key ?? "");
-                model.TotpUri = $"otpauth://totp/{Uri.EscapeDataString("Moviest")}:{Uri.EscapeDataString(email)}?secret={key}&issuer={Uri.EscapeDataString("Moviest")}&digits=6";
+                await RepopulateQrModel(user, model);
                 return View(model);
             }
 
@@ -222,6 +221,24 @@ namespace Moviest.Controllers
         {
             return string.Join(" ", Enumerable.Range(0, (key.Length + 3) / 4)
                 .Select(i => key.Substring(i * 4, Math.Min(4, key.Length - i * 4))));
+        }
+
+        private static string GenerateQrCodeDataUrl(string totpUri)
+        {
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(totpUri, QRCodeGenerator.ECCLevel.Q);
+            using var qrCode = new PngByteQRCode(qrData);
+            var pngBytes = qrCode.GetGraphic(6);
+            return $"data:image/png;base64,{Convert.ToBase64String(pngBytes)}";
+        }
+
+        private async Task RepopulateQrModel(IdentityUser user, Setup2FAViewModel model)
+        {
+            var key = await _userManager.GetAuthenticatorKeyAsync(user);
+            var email = await _userManager.GetEmailAsync(user) ?? user.UserName ?? "user";
+            var totpUri = $"otpauth://totp/{Uri.EscapeDataString("Moviest")}:{Uri.EscapeDataString(email)}?secret={key}&issuer={Uri.EscapeDataString("Moviest")}&digits=6";
+            model.AuthenticatorKey = FormatAuthenticatorKey(key ?? "");
+            model.QrCodeDataUrl = GenerateQrCodeDataUrl(totpUri);
         }
 
         [HttpGet]

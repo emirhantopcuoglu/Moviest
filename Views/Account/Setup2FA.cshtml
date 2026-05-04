@@ -31,7 +31,8 @@
         <div class="section-title" style="margin-top:1.25rem;"><i class="bi bi-qr-code"></i> Adım 2 — QR Kodu Tara</div>
         <div style="display:flex;gap:1.5rem;align-items:flex-start;flex-wrap:wrap;">
             <div>
-                <canvas id="qrCanvas" style="border-radius:var(--radius-sm);background:#fff;padding:8px;display:block;"></canvas>
+                <img src="@Model.QrCodeDataUrl" alt="2FA QR Kodu"
+                     style="border-radius:var(--radius-sm);background:#fff;padding:8px;display:block;width:180px;height:180px;" />
             </div>
             <div style="flex:1;min-width:200px;">
                 <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.75rem;">
@@ -75,12 +76,3 @@
     </div>
 </div>
 
-@section Scripts {
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script>
-const totpUri = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TotpUri));
-QRCode.toCanvas(document.getElementById('qrCanvas'), totpUri, { width: 180, margin: 1 }, function(err) {
-    if (err) console.error('QR oluşturulamadı:', err);
-});
-</script>
-}
