@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Moviest.Data;
 using Moviest.Models;
+using Moviest.Services;
 using QRCoder;
 
 namespace Moviest.Controllers
@@ -15,13 +16,13 @@ namespace Moviest.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IdentityContext _context;
-        private readonly IEmailSender _emailSender;
+        private readonly Moviest.Services.IEmailSender _emailSender;
 
         public AccountController(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             IdentityContext context,
-            IEmailSender emailSender)
+            Moviest.Services.IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;

@@ -1,6 +1,7 @@
-using System.Net;
-using System.Net.Mail;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Options;
+using MimeKit;
 using Moviest.Models;
 
 namespace Moviest.Services
@@ -18,29 +19,31 @@ namespace Moviest.Services
 
         public async Task SendAsync(string toAddress, string subject, string htmlBody)
         {
-            using var client = new SmtpClient(_settings.Host, _settings.Port)
-            {
-                EnableSsl = _settings.UseSsl,
-                Credentials = new NetworkCredential(_settings.UserName, _settings.Password)
-            };
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(_settings.FromName, _settings.FromAddress));
+            message.To.Add(MailboxAddress.Parse(toAddress));
+            message.Subject = subject;
+            message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
 
-            using var message = new MailMessage
-            {
-                From = new MailAddress(_settings.FromAddress, _settings.FromName),
-                Subject = subject,
-                Body = htmlBody,
-                IsBodyHtml = true
-            };
-            message.To.Add(toAddress);
-
+            using var client = new SmtpClient();
             try
             {
-                await client.SendMailAsync(message);
+                var secureSocketOptions = _settings.UseSsl
+                    ? SecureSocketOptions.StartTls
+                    : SecureSocketOptions.None;
+
+                await client.ConnectAsync(_settings.Host, _settings.Port, secureSocketOptions);
+                await client.AuthenticateAsync(_settings.UserName, _settings.Password);
+                await client.SendAsync(message);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "E-posta gönderilemedi: {To}", toAddress);
                 throw;
+            }
+            finally
+            {
+                await client.DisconnectAsync(quit: true);
             }
         }
     }
