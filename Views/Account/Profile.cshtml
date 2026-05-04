@@ -54,6 +54,11 @@
             <span>Şifre Değiştir</span>
             <i class="bi bi-chevron-right" style="margin-left:auto;color:var(--text-muted);font-size:0.75rem;"></i>
         </a>
+        <a class="profile-action-link" asp-controller="Account" asp-action="ChangeEmail">
+            <i class="bi bi-envelope"></i>
+            <span>E-posta Değiştir</span>
+            <i class="bi bi-chevron-right" style="margin-left:auto;color:var(--text-muted);font-size:0.75rem;"></i>
+        </a>
 
         <div class="divider" style="margin:4px 0;"></div>
 
@@ -89,5 +94,10 @@
                 <span>Çıkış Yap</span>
             </button>
         </form>
+        <a class="profile-action-link" asp-controller="Account" asp-action="DeleteAccount" style="color:var(--danger);">
+            <i class="bi bi-trash" style="color:var(--danger);"></i>
+            <span>Hesabı Sil</span>
+            <i class="bi bi-chevron-right" style="margin-left:auto;color:var(--danger);font-size:0.75rem;"></i>
+        </a>
     </div>
 </div>

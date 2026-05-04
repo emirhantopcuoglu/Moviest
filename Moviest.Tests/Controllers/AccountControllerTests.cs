@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Moviest.Controllers;
 using Moviest.Data;
 using Moviest.Models;
@@ -17,6 +18,7 @@ public class AccountControllerTests
             .Options);
 
     private static IEmailSender NoOpEmailSender() => new StubEmailSender();
+    private static IOptions<EmailSettings> NoOpEmailSettings() => Options.Create(new EmailSettings());
 
     [Fact]
     public async Task Register_WhenCreationSucceeds_RedirectsToMovies()
@@ -38,7 +40,7 @@ public class AccountControllerTests
         };
 
         using var ctx = CreateContext();
-        var controller = new AccountController(userManager, signInManager, ctx, NoOpEmailSender());
+        var controller = new AccountController(userManager, signInManager, ctx, NoOpEmailSender(), NoOpEmailSettings());
         ControllerTestContext.AttachHttpContext(controller);
 
         var result = await controller.Register(new RegisterViewModel
@@ -65,7 +67,7 @@ public class AccountControllerTests
         };
 
         using var ctx = CreateContext();
-        var controller = new AccountController(userManager, signInManager, ctx, NoOpEmailSender());
+        var controller = new AccountController(userManager, signInManager, ctx, NoOpEmailSender(), NoOpEmailSettings());
         ControllerTestContext.AttachHttpContext(controller);
 
         var result = await controller.Login(new LoginViewModel

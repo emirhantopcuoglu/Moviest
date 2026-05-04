@@ -1,0 +1,50 @@
+@model Moviest.Models.DeleteAccountViewModel
+@{
+    ViewData["Title"] = "Hesabı Sil";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-page">
+    <div class="auth-card">
+        <span class="auth-logo" style="color:var(--danger);"><i class="bi bi-exclamation-triangle-fill"></i> Hesabı Sil</span>
+        <h1 class="auth-title">Hesabını silmek istediğine emin misin?</h1>
+        <p class="auth-subtitle" style="color:var(--danger-light);">
+            Bu işlem geri alınamaz. İzleme listeni, yorumlarını ve tüm verilerini kalıcı olarak silecek.
+        </p>
+
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState[""] != null)
+        {
+            <div class="alert-app alert-danger-app">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                @ViewData.ModelState[""]!.Errors.FirstOrDefault()?.ErrorMessage
+            </div>
+        }
+
+        <form asp-action="DeleteAccount" method="post">
+            @Html.AntiForgeryToken()
+            <div class="mb-field">
+                <label asp-for="CurrentPassword" class="form-label">Onaylamak için şifrenizi girin</label>
+                <div class="input-wrap">
+                    <i class="bi bi-lock"></i>
+                    <input asp-for="CurrentPassword" type="password" class="form-control" placeholder="••••••••" autocomplete="current-password" />
+                </div>
+                <span asp-validation-for="CurrentPassword" class="field-error"></span>
+            </div>
+
+            <button type="submit" class="btn-danger-soft" style="width:100%;justify-content:center;padding:0.75rem;"
+                    onclick="return confirm('Hesabınız kalıcı olarak silinecek. Emin misiniz?')">
+                <i class="bi bi-trash-fill"></i> Hesabımı Kalıcı Olarak Sil
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <a asp-controller="Account" asp-action="Profile">
+                <i class="bi bi-arrow-left"></i> Profil'e geri dön
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Moviest.Data;
 using Moviest.Models;
 using Moviest.Services;
@@ -17,17 +18,20 @@ namespace Moviest.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IdentityContext _context;
         private readonly Moviest.Services.IEmailSender _emailSender;
+        private readonly EmailSettings _emailSettings;
 
         public AccountController(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
             IdentityContext context,
-            Moviest.Services.IEmailSender emailSender)
+            Moviest.Services.IEmailSender emailSender,
+            IOptions<EmailSettings> emailSettings)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
             _emailSender = emailSender;
+            _emailSettings = emailSettings.Value;
         }
 
         [AllowAnonymous]
@@ -392,6 +396,175 @@ namespace Moviest.Controllers
 
             var result = await _userManager.ConfirmEmailAsync(user, token);
             return View(result.Succeeded ? "EmailConfirmed" : "EmailConfirmFailed");
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult ForgotPassword() => View();
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [EnableRateLimiting("auth")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            if (!_emailSettings.IsConfigured)
+            {
+                ModelState.AddModelError(string.Empty, "Şifre sıfırlama e-postası şu anda kullanılamıyor. Lütfen yönetici ile iletişime geçin.");
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user != null)
+            {
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var resetUrl = Url.Action(
+                    "ResetPassword", "Account",
+                    new { userId = user.Id, token },
+                    Request.Scheme)!;
+
+                var html = $"""
+                    <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;background:#111827;border-radius:12px;color:#e2e8f0;">
+                        <h2 style="color:#e8b923;margin-bottom:16px;">Moviest — Şifre Sıfırlama</h2>
+                        <p style="margin-bottom:24px;">Şifrenizi sıfırlamak için aşağıdaki butona tıklayın:</p>
+                        <a href="{resetUrl}"
+                           style="display:inline-block;background:#e8b923;color:#000;font-weight:700;
+                                  padding:12px 28px;border-radius:8px;text-decoration:none;font-size:15px;">
+                            Şifremi Sıfırla
+                        </a>
+                        <p style="margin-top:24px;font-size:12px;color:#4f5b72;">
+                            Bu bağlantı 1 saat geçerlidir. Eğer bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz.
+                        </p>
+                    </div>
+                    """;
+
+                await _emailSender.SendAsync(user.Email!, "Moviest — Şifre Sıfırlama", html);
+            }
+
+            return RedirectToAction("ForgotPasswordConfirmation");
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult ForgotPasswordConfirmation() => View();
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult ResetPassword(string userId, string token)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+                return BadRequest();
+
+            return View(new ResetPasswordViewModel { UserId = userId, Token = token });
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [EnableRateLimiting("auth")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Geçersiz bağlantı.");
+                return View(model);
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (result.Succeeded)
+            {
+                TempData["Success"] = "Şifreniz başarıyla sıfırlandı. Giriş yapabilirsiniz.";
+                return RedirectToAction("Login");
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
+
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ChangeEmail()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            ViewBag.CurrentEmail = user.Email;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.CurrentEmail = user.Email;
+                return View(model);
+            }
+
+            var passwordCheck = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
+            if (!passwordCheck)
+            {
+                ModelState.AddModelError(string.Empty, "Şifreniz hatalı.");
+                ViewBag.CurrentEmail = user.Email;
+                return View(model);
+            }
+
+            var existingUser = await _userManager.FindByEmailAsync(model.NewEmail);
+            if (existingUser != null && existingUser.Id != user.Id)
+            {
+                ModelState.AddModelError(string.Empty, "Bu e-posta adresi zaten kullanımda.");
+                ViewBag.CurrentEmail = user.Email;
+                return View(model);
+            }
+
+            user.Email = model.NewEmail;
+            user.NormalizedEmail = _userManager.NormalizeEmail(model.NewEmail);
+            user.EmailConfirmed = false;
+            await _userManager.UpdateAsync(user);
+
+            await _signInManager.RefreshSignInAsync(user);
+            TempData["Success"] = "E-posta adresiniz başarıyla güncellendi.";
+            return RedirectToAction("Profile");
+        }
+
+        [HttpGet]
+        public IActionResult DeleteAccount() => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount(DeleteAccountViewModel model)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var passwordCheck = await _userManager.CheckPasswordAsync(user, model.CurrentPassword);
+            if (!passwordCheck)
+            {
+                ModelState.AddModelError(string.Empty, "Şifreniz hatalı. Hesabınız silinmedi.");
+                return View(model);
+            }
+
+            await _signInManager.SignOutAsync();
+            await _userManager.DeleteAsync(user);
+            return RedirectToAction("Register", "Account");
         }
 
         [AllowAnonymous]
