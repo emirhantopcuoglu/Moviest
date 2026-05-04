@@ -154,6 +154,22 @@ namespace Moviest.Services
             return GetCachedAsync($"movies:trending:{page}", () => GetAndDeserializeAsync<MovieResponse>(url), TimeSpan.FromMinutes(5));
         }
 
+        public Task<MovieResponse> DiscoverMovies(
+            int? genreId, int? yearFrom, int? yearTo, double? minRating, string sortBy, int page)
+        {
+            var qs = new System.Text.StringBuilder();
+            qs.Append($"&page={page}");
+            qs.Append($"&sort_by={Uri.EscapeDataString(sortBy)}");
+            if (genreId.HasValue)  qs.Append($"&with_genres={genreId}");
+            if (yearFrom.HasValue) qs.Append($"&primary_release_date.gte={yearFrom}-01-01");
+            if (yearTo.HasValue)   qs.Append($"&primary_release_date.lte={yearTo}-12-31");
+            if (minRating.HasValue) qs.Append($"&vote_average.gte={minRating.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+
+            var url = BuildUrl(TmdbEndpoints.DiscoverByGenre, qs.ToString());
+            var key = $"discover:{genreId}:{yearFrom}:{yearTo}:{minRating}:{sortBy}:{page}";
+            return GetCachedAsync(key, () => GetAndDeserializeAsync<MovieResponse>(url), TimeSpan.FromMinutes(10));
+        }
+
         public async Task<List<Movie>> GetMovieRecommendations(int movieId)
         {
             var url = BuildUrl(string.Format(TmdbEndpoints.MovieRecommendations, movieId), string.Empty);

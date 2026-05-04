@@ -1,0 +1,187 @@
+@model Moviest.Models.DiscoverFilterViewModel
+@{
+    ViewData["Title"] = "Film Keşfet";
+    Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
+    int currentYear = DateTime.UtcNow.Year;
+}
+
+<div class="page-title"><i class="bi bi-sliders"></i> Film Keşfet</div>
+
+<form method="get" asp-action="Discover" asp-controller="Movies" class="discover-filter-card">
+    <div class="discover-filter-grid">
+
+        <div class="discover-field">
+            <label class="form-label">Tür</label>
+            <select name="genreId" class="form-select">
+                <option value="">Tümü</option>
+                @foreach (var genre in Model.Genres)
+                {
+                    <option value="@genre.Id" selected="@(Model.GenreId == genre.Id)">@genre.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="discover-field">
+            <label class="form-label">Yıldan</label>
+            <select name="yearFrom" class="form-select">
+                <option value="">Tümü</option>
+                @for (int y = currentYear; y >= 1950; y--)
+                {
+                    <option value="@y" selected="@(Model.YearFrom == y)">@y</option>
+                }
+            </select>
+        </div>
+
+        <div class="discover-field">
+            <label class="form-label">Yıla</label>
+            <select name="yearTo" class="form-select">
+                <option value="">Tümü</option>
+                @for (int y = currentYear; y >= 1950; y--)
+                {
+                    <option value="@y" selected="@(Model.YearTo == y)">@y</option>
+                }
+            </select>
+        </div>
+
+        <div class="discover-field">
+            <label class="form-label">Min. Puan</label>
+            <select name="minRating" class="form-select">
+                <option value="">Tümü</option>
+                @foreach (var r in new[] { 9, 8, 7, 6, 5 })
+                {
+                    <option value="@r" selected="@(Model.MinRating == r)">@r+</option>
+                }
+            </select>
+        </div>
+
+        <div class="discover-field">
+            <label class="form-label">Sırala</label>
+            <select name="sortBy" class="form-select">
+                <option value="popularity.desc"    selected="@(Model.SortBy == "popularity.desc")">Popülerlik (Azalan)</option>
+                <option value="popularity.asc"     selected="@(Model.SortBy == "popularity.asc")">Popülerlik (Artan)</option>
+                <option value="vote_average.desc"  selected="@(Model.SortBy == "vote_average.desc")">Puan (Azalan)</option>
+                <option value="vote_average.asc"   selected="@(Model.SortBy == "vote_average.asc")">Puan (Artan)</option>
+                <option value="release_date.desc"  selected="@(Model.SortBy == "release_date.desc")">Yeni → Eski</option>
+                <option value="release_date.asc"   selected="@(Model.SortBy == "release_date.asc")">Eski → Yeni</option>
+                <option value="revenue.desc"       selected="@(Model.SortBy == "revenue.desc")">Gişe (Azalan)</option>
+                <option value="original_title.asc" selected="@(Model.SortBy == "original_title.asc")">İsim (A-Z)</option>
+            </select>
+        </div>
+
+        <div class="discover-field" style="display:flex;align-items:flex-end;gap:8px;">
+            <button type="submit" class="btn-accent" style="flex:1;">
+                <i class="bi bi-search"></i> Ara
+            </button>
+            <a href="@Url.Action("Discover", "Movies")" class="btn-ghost" title="Filtreleri temizle">
+                <i class="bi bi-x-lg"></i>
+            </a>
+        </div>
+    </div>
+</form>
+
+@if (!Model.Movies.Any())
+{
+    <div class="watchlist-empty">
+        <i class="bi bi-film"></i>
+        <h3>Sonuç bulunamadı</h3>
+        <p>Farklı filtre kombinasyonlarını deneyin.</p>
+    </div>
+}
+else
+{
+    <div class="pagination-row">
+        @if (Model.Page > 1)
+        {
+            <a href="@Url.Action("Discover", "Movies", new { genreId = Model.GenreId, yearFrom = Model.YearFrom, yearTo = Model.YearTo, minRating = Model.MinRating, sortBy = Model.SortBy, page = Model.Page - 1 })"
+               class="btn-ghost"><i class="bi bi-chevron-left"></i> Önceki</a>
+        }
+        else
+        {
+            <span class="btn-ghost disabled" tabindex="-1" aria-disabled="true"><i class="bi bi-chevron-left"></i> Önceki</span>
+        }
+        <span class="page-info">Sayfa @Model.Page / @Model.TotalPages</span>
+        @if (Model.Page < Model.TotalPages)
+        {
+            <a href="@Url.Action("Discover", "Movies", new { genreId = Model.GenreId, yearFrom = Model.YearFrom, yearTo = Model.YearTo, minRating = Model.MinRating, sortBy = Model.SortBy, page = Model.Page + 1 })"
+               class="btn-ghost">Sonraki <i class="bi bi-chevron-right"></i></a>
+        }
+        else
+        {
+            <span class="btn-ghost disabled" tabindex="-1" aria-disabled="true">Sonraki <i class="bi bi-chevron-right"></i></span>
+        }
+    </div>
+
+    <div class="movie-grid">
+        @foreach (var movie in Model.Movies)
+        {
+            <div class="movie-card">
+                <div class="poster-wrap">
+                    <img src="@(string.IsNullOrEmpty(movie.Poster) ? "https://via.placeholder.com/500x750?text=Görsel+Yok" : $"https://image.tmdb.org/t/p/w342{movie.Poster}")"
+                         alt="@movie.Title" loading="lazy" />
+                    <div class="poster-overlay">
+                        <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="overlay-btn">
+                            <i class="bi bi-info-circle"></i> Detaylar
+                        </a>
+                    </div>
+                    <button class="card-bookmark-btn" onclick="quickAdd(this)"
+                            data-movie-id="@movie.Id"
+                            data-title="@movie.Title"
+                            data-poster="@(movie.Poster ?? "")"
+                            data-year="@(DateTime.TryParse(movie.ReleaseDate, out var y) ? y.Year.ToString() : "")"
+                            title="İzleme listesine ekle">
+                        <i class="bi bi-bookmark-plus"></i>
+                    </button>
+                </div>
+                <div class="card-info">
+                    <div class="card-title" title="@movie.Title">@movie.Title</div>
+                    <div class="card-year">
+                        <i class="bi bi-calendar3" style="font-size:0.65rem;"></i>
+                        @(DateTime.TryParse(movie.ReleaseDate, out var d) ? d.ToString("yyyy") : "-")
+                    </div>
+                    <div class="card-footer-row">
+                        <span class="rating-badge @GetRatingClass(movie.VoteAverage)">
+                            <i class="bi bi-star-fill"></i> @movie.VoteAverage.ToString("F1")
+                        </span>
+                        <a href="@Url.Action("Details", "Movies", new { id = movie.Id })"
+                           class="btn-outline-accent" style="padding:4px 10px;font-size:0.75rem;">
+                            İncele
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="pagination-row" style="margin-top:1.5rem;">
+        @if (Model.Page > 1)
+        {
+            <a href="@Url.Action("Discover", "Movies", new { genreId = Model.GenreId, yearFrom = Model.YearFrom, yearTo = Model.YearTo, minRating = Model.MinRating, sortBy = Model.SortBy, page = Model.Page - 1 })"
+               class="btn-ghost"><i class="bi bi-chevron-left"></i> Önceki</a>
+        }
+        else
+        {
+            <span class="btn-ghost disabled"><i class="bi bi-chevron-left"></i> Önceki</span>
+        }
+        <span class="page-info">Sayfa @Model.Page / @Model.TotalPages</span>
+        @if (Model.Page < Model.TotalPages)
+        {
+            <a href="@Url.Action("Discover", "Movies", new { genreId = Model.GenreId, yearFrom = Model.YearFrom, yearTo = Model.YearTo, minRating = Model.MinRating, sortBy = Model.SortBy, page = Model.Page + 1 })"
+               class="btn-ghost">Sonraki <i class="bi bi-chevron-right"></i></a>
+        }
+        else
+        {
+            <span class="btn-ghost disabled">Sonraki <i class="bi bi-chevron-right"></i></span>
+        }
+    </div>
+}
+
+@functions {
+    string GetRatingClass(double v) => v switch {
+        >= 9 => "rating-high",
+        >= 7 => "rating-good",
+        >= 5 => "rating-avg",
+        >= 4 => "rating-poor",
+        > 0  => "rating-bad",
+        _    => "rating-unknown"
+    };
+}

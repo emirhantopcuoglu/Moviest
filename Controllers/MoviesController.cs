@@ -203,6 +203,43 @@ namespace Moviest.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Discover(
+            int? genreId, int? yearFrom, int? yearTo,
+            double? minRating, string sortBy = "popularity.desc", int page = 1)
+        {
+            page = Math.Max(1, page);
+
+            var validSortOptions = new HashSet<string>
+            {
+                "popularity.desc", "popularity.asc",
+                "vote_average.desc", "vote_average.asc",
+                "release_date.desc", "release_date.asc",
+                "revenue.desc", "original_title.asc"
+            };
+            if (!validSortOptions.Contains(sortBy))
+                sortBy = "popularity.desc";
+
+            var genresTask = _movieService.GetGenres();
+            var moviesTask = _movieService.DiscoverMovies(genreId, yearFrom, yearTo, minRating, sortBy, page);
+            await Task.WhenAll(genresTask, moviesTask);
+
+            var vm = new DiscoverFilterViewModel
+            {
+                GenreId = genreId,
+                YearFrom = yearFrom,
+                YearTo = yearTo,
+                MinRating = minRating,
+                SortBy = sortBy,
+                Page = page,
+                TotalPages = moviesTask.Result.TotalPages,
+                Movies = moviesTask.Result.Movies ?? [],
+                Genres = genresTask.Result.Genres ?? []
+            };
+
+            return View(vm);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Recommendations()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);

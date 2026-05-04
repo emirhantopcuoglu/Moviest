@@ -489,6 +489,18 @@ a:hover{color:var(--accent-dim)}
 .toast-success i{color:var(--success)}
 .toast-error i{color:var(--danger)}
 
+/* ---- Discover Filter ---- */
+.discover-filter-card{
+  background:var(--bg-surface);border:1px solid var(--border-hover);
+  border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1.5rem;
+}
+.discover-filter-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:12px;align-items:end;
+}
+.discover-field{display:flex;flex-direction:column}
+
 /* ---- Stats ---- */
 .stats-grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;
