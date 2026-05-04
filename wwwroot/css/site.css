@@ -489,6 +489,37 @@ a:hover{color:var(--accent-dim)}
 .toast-success i{color:var(--success)}
 .toast-error i{color:var(--danger)}
 
+/* ---- Stats ---- */
+.stats-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;
+}
+.stats-two-col{
+  display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;
+}
+@media(max-width:700px){.stats-two-col{grid-template-columns:1fr}}
+.rating-dist{display:flex;flex-direction:column;gap:6px}
+.dist-row{display:flex;align-items:center;gap:8px}
+.dist-label{
+  width:22px;text-align:right;font-size:0.78rem;font-weight:700;
+  color:var(--text-secondary);flex-shrink:0;
+}
+.dist-bar-wrap{flex:1;height:14px;background:var(--bg-surface);border-radius:20px;overflow:hidden}
+.dist-bar{height:100%;border-radius:20px;transition:width 0.5s var(--ease);min-width:2px}
+.dist-count{width:24px;text-align:right;font-size:0.74rem;color:var(--text-muted);flex-shrink:0}
+.recent-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.recent-item{
+  display:flex;align-items:center;gap:12px;padding:10px 14px;
+  text-decoration:none;color:var(--text-primary);transition:var(--transition);
+  border-bottom:1px solid var(--border);
+}
+.recent-item:last-child{border-bottom:none}
+.recent-item:hover{background:var(--bg-card-hover)}
+.recent-item img{width:32px;height:48px;object-fit:cover;border-radius:3px;flex-shrink:0;background:var(--bg-surface)}
+.recent-title{font-size:0.83rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recent-meta{font-size:0.72rem;color:var(--text-muted);display:flex;align-items:center;gap:8px;margin-top:2px}
+.recent-rating{color:var(--accent);display:flex;align-items:center;gap:2px}
+.recent-rating i{font-size:0.65rem}
+
 /* ---- Reviews ---- */
 .review-count-badge{
   background:var(--accent-light);color:var(--accent);

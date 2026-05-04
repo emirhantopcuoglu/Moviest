@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Moviest.Data;
 using Moviest.Models;
 using QRCoder;
 
@@ -12,11 +14,16 @@ namespace Moviest.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IdentityContext _context;
 
-        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
+        public AccountController(
+            UserManager<IdentityUser> userManager,
+            SignInManager<IdentityUser> signInManager,
+            IdentityContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _context = context;
         }
 
         [AllowAnonymous]
@@ -268,6 +275,64 @@ namespace Moviest.Controllers
                 ModelState.AddModelError(string.Empty, error.Description);
 
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Stats()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return RedirectToAction("Login");
+
+            var userId = user.Id;
+
+            var watchlist = await _context.WatchlistItems
+                .Where(w => w.UserId == userId)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var reviews = await _context.Reviews
+                .Where(r => r.UserId == userId)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var ratingDist = Enumerable.Range(1, 10)
+                .Select(r => new RatingBucket(r, watchlist.Count(w => w.PersonalRating == r)))
+                .ToList();
+
+            var monthlyActivity = watchlist
+                .GroupBy(w => new { w.AddedAt.Year, w.AddedAt.Month })
+                .OrderByDescending(g => g.Key.Year).ThenByDescending(g => g.Key.Month)
+                .Take(12)
+                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                .Select(g => new MonthlyBucket($"{g.Key.Year}/{g.Key.Month:D2}", g.Count()))
+                .ToList();
+
+            var rated = watchlist.Where(w => w.PersonalRating.HasValue).ToList();
+
+            var vm = new UserStatsViewModel
+            {
+                UserName = user.UserName ?? string.Empty,
+                TotalInList = watchlist.Count,
+                TotalWatched = watchlist.Count(w => w.IsWatched),
+                TotalUnwatched = watchlist.Count(w => !w.IsWatched),
+                TotalRated = rated.Count,
+                AveragePersonalRating = rated.Count > 0
+                    ? Math.Round(rated.Average(w => w.PersonalRating!.Value), 1)
+                    : 0,
+                TotalReviews = reviews.Count,
+                AverageReviewRating = reviews.Count > 0
+                    ? Math.Round(reviews.Average(r => r.Rating), 1)
+                    : 0,
+                RatingDistribution = ratingDist,
+                MonthlyActivity = monthlyActivity,
+                RecentlyAdded = watchlist
+                    .OrderByDescending(w => w.AddedAt)
+                    .Take(5)
+                    .ToList()
+            };
+
+            return View(vm);
         }
 
         [AllowAnonymous]

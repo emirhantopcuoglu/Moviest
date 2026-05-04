@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moviest.Controllers;
+using Moviest.Data;
 using Moviest.Models;
 using Moviest.Tests.Infrastructure;
 
@@ -8,6 +10,11 @@ namespace Moviest.Tests.Controllers;
 
 public class AccountControllerTests
 {
+    private static IdentityContext CreateContext() =>
+        new(new DbContextOptionsBuilder<IdentityContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options);
+
     [Fact]
     public async Task Register_WhenCreationSucceeds_RedirectsToMovies()
     {
@@ -27,7 +34,8 @@ public class AccountControllerTests
             return Task.CompletedTask;
         };
 
-        var controller = new AccountController(userManager, signInManager);
+        using var ctx = CreateContext();
+        var controller = new AccountController(userManager, signInManager, ctx);
         ControllerTestContext.AttachHttpContext(controller);
 
         var result = await controller.Register(new RegisterViewModel
@@ -53,7 +61,8 @@ public class AccountControllerTests
             PasswordSignInAsyncHandler = (_, _, _, _) => Task.FromResult(Microsoft.AspNetCore.Identity.SignInResult.LockedOut)
         };
 
-        var controller = new AccountController(userManager, signInManager);
+        using var ctx = CreateContext();
+        var controller = new AccountController(userManager, signInManager, ctx);
         ControllerTestContext.AttachHttpContext(controller);
 
         var result = await controller.Login(new LoginViewModel
