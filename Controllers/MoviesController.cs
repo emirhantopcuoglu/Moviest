@@ -202,6 +202,51 @@ namespace Moviest.Controllers
             return Json(suggestions);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> Recommendations()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            // Seed: top-rated personal items first, then most recently added, up to 6
+            var seedIds = await _context.WatchlistItems
+                .Where(w => w.UserId == userId)
+                .OrderByDescending(w => w.PersonalRating ?? 0)
+                .ThenByDescending(w => w.AddedAt)
+                .Select(w => w.MovieId)
+                .Take(6)
+                .ToListAsync();
+
+            if (seedIds.Count == 0)
+            {
+                ViewBag.Empty = true;
+                return View(new List<Movie>());
+            }
+
+            // Fetch TMDB recommendations for each seed in parallel, then merge
+            var tasks = seedIds.Select(id =>
+                TryGetOrDefaultAsync(() => _movieService.GetMovieRecommendations(id), new List<Movie>()));
+
+            var results = await Task.WhenAll(tasks);
+
+            var watchlistIds = (await _context.WatchlistItems
+                .Where(w => w.UserId == userId)
+                .Select(w => w.MovieId)
+                .ToListAsync())
+                .ToHashSet();
+
+            var recommendations = results
+                .SelectMany(list => list)
+                .Where(m => !watchlistIds.Contains(m.Id))
+                .GroupBy(m => m.Id)
+                .OrderByDescending(g => g.Count())           // more seeds → higher rank
+                .ThenByDescending(g => g.First().VoteAverage)
+                .Select(g => g.First())
+                .Take(24)
+                .ToList();
+
+            return View(recommendations);
+        }
+
         private static async Task<T> TryGetOrDefaultAsync<T>(Func<Task<T>> action, T fallback)
         {
             try

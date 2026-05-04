@@ -1,0 +1,85 @@
+@model IEnumerable<Moviest.Models.Movie>
+@{
+    ViewData["Title"] = "Sana Özel Öneriler";
+    Layout = "~/Views/Shared/SideNavbarLayout.cshtml";
+}
+
+<div class="page-title"><i class="bi bi-stars"></i> Sana Özel Öneriler</div>
+
+@if (ViewBag.Empty == true)
+{
+    <div class="watchlist-empty">
+        <i class="bi bi-stars"></i>
+        <h3>Henüz öneri yok</h3>
+        <p>Önerilerin oluşması için izleme listene birkaç film ekle. Liste ne kadar doluysa öneriler o kadar isabetli olur.</p>
+        <a href="/movies" class="btn-accent"><i class="bi bi-fire"></i> Film Keşfet</a>
+    </div>
+}
+else if (!Model.Any())
+{
+    <div class="watchlist-empty">
+        <i class="bi bi-emoji-smile"></i>
+        <h3>Her şeyi izlemişsin!</h3>
+        <p>İzleme listendeki filmlere benzer yeni bir şey bulunamadı. Daha fazla film ekledikçe öneriler güncellenir.</p>
+        <a href="/movies/trending" class="btn-accent"><i class="bi bi-graph-up-arrow"></i> Trend Filmlere Bak</a>
+    </div>
+}
+else
+{
+    <p style="font-size:0.83rem;color:var(--text-muted);margin-bottom:1.5rem;">
+        <i class="bi bi-info-circle"></i>
+        İzleme listendeki filmlere göre TMDB'den seçilen, listende olmayan filmler.
+    </p>
+
+    <div class="movie-grid">
+        @foreach (var movie in Model)
+        {
+            <div class="movie-card">
+                <div class="poster-wrap">
+                    <img src="@(string.IsNullOrEmpty(movie.Poster) ? "https://via.placeholder.com/500x750?text=Görsel+Yok" : $"https://image.tmdb.org/t/p/w342{movie.Poster}")"
+                         alt="@movie.Title" loading="lazy" />
+                    <div class="poster-overlay">
+                        <a href="@Url.Action("Details", "Movies", new { id = movie.Id })" class="overlay-btn">
+                            <i class="bi bi-info-circle"></i> Detaylar
+                        </a>
+                    </div>
+                    <button class="card-bookmark-btn" onclick="quickAdd(this)"
+                            data-movie-id="@movie.Id"
+                            data-title="@movie.Title"
+                            data-poster="@(movie.Poster ?? "")"
+                            data-year="@(DateTime.TryParse(movie.ReleaseDate, out var y) ? y.Year.ToString() : "")"
+                            title="İzleme listesine ekle">
+                        <i class="bi bi-bookmark-plus"></i>
+                    </button>
+                </div>
+                <div class="card-info">
+                    <div class="card-title" title="@movie.Title">@movie.Title</div>
+                    <div class="card-year">
+                        <i class="bi bi-calendar3" style="font-size:0.65rem;"></i>
+                        @(DateTime.TryParse(movie.ReleaseDate, out var d) ? d.ToString("yyyy") : "-")
+                    </div>
+                    <div class="card-footer-row">
+                        <span class="rating-badge @GetRatingClass(movie.VoteAverage)">
+                            <i class="bi bi-star-fill"></i> @movie.VoteAverage.ToString("F1")
+                        </span>
+                        <a href="@Url.Action("Details", "Movies", new { id = movie.Id })"
+                           class="btn-outline-accent" style="padding:4px 10px;font-size:0.75rem;">
+                            İncele
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@functions {
+    string GetRatingClass(double v) => v switch {
+        >= 9 => "rating-high",
+        >= 7 => "rating-good",
+        >= 5 => "rating-avg",
+        >= 4 => "rating-poor",
+        > 0  => "rating-bad",
+        _    => "rating-unknown"
+    };
+}

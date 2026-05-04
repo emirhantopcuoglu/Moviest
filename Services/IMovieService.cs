@@ -19,5 +19,6 @@ namespace Moviest.Services
         Task<ActorDetails> GetActorDetails(int actorId);
         Task<List<Movie>> GetActorMovies(int actorId);
         Task<MovieResponse> GetTrendingMovies(int page = 1);
+        Task<List<Movie>> GetMovieRecommendations(int movieId);
     }
 }

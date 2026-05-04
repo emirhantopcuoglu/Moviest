@@ -16,6 +16,7 @@ namespace Moviest.Constants
         internal const string SearchMovie = "search/movie";
         internal const string PersonDetail = "person/{0}";
         internal const string PersonMovieCredits = "person/{0}/movie_credits";
+        internal const string MovieRecommendations = "movie/{0}/recommendations";
     }
 
     internal static class ConfigKeys

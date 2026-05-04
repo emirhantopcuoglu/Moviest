@@ -154,6 +154,16 @@ namespace Moviest.Services
             return GetCachedAsync($"movies:trending:{page}", () => GetAndDeserializeAsync<MovieResponse>(url), TimeSpan.FromMinutes(5));
         }
 
+        public async Task<List<Movie>> GetMovieRecommendations(int movieId)
+        {
+            var url = BuildUrl(string.Format(TmdbEndpoints.MovieRecommendations, movieId), string.Empty);
+            var response = await GetCachedAsync(
+                $"movie:recommendations:{movieId}",
+                () => GetAndDeserializeAsync<MovieResponse>(url),
+                TimeSpan.FromMinutes(15));
+            return response.Movies ?? [];
+        }
+
         private async Task<T> GetAndDeserializeAsync<T>(string url)
         {
             var response = await _httpClient.GetAsync(url);

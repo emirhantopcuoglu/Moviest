@@ -23,6 +23,7 @@ internal sealed class TestMovieService : IMovieService
     public Task<ActorDetails> GetActorDetails(int actorId) => throw new NotImplementedException();
     public Task<List<Movie>> GetActorMovies(int actorId) => throw new NotImplementedException();
     public Task<MovieResponse> GetTrendingMovies(int page = 1) => throw new NotImplementedException();
+    public Task<List<Movie>> GetMovieRecommendations(int movieId) => Task.FromResult(new List<Movie>());
 
     public Task<MovieDetails> GetMovieDetails(int id)
         => GetMovieDetailsHandler?.Invoke(id) ?? throw new NotImplementedException();
