@@ -2,6 +2,37 @@
 
 A Turkish-language film discovery platform built with ASP.NET Core 8 MVC. Browse popular, trending, and upcoming movies, manage a personal watchlist, and explore actor profiles — all powered by the TMDB API.
 
+## Screenshots
+
+<table>
+  <tr>
+    <td colspan="2"><img src="docs/screenshots/home.png" alt="Landing Page" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/login.png" alt="Login" /></td>
+    <td><img src="docs/screenshots/register.png" alt="Register" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/trending.png" alt="Trending Movies" /></td>
+    <td><img src="docs/screenshots/top_rated.png" alt="Top Rated Movies" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/discover.png" alt="Discover" /></td>
+    <td><img src="docs/screenshots/genres.png" alt="Genres" /></td>
+  </tr>
+  <tr>
+    <td colspan="2"><img src="docs/screenshots/watchlist.png" alt="Watchlist" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/profile.png" alt="Profile" /></td>
+    <td><img src="docs/screenshots/change_password.png" alt="Change Password" /></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/delete_account.png" alt="Delete Account" /></td>
+    <td></td>
+  </tr>
+</table>
+
 ## Features
 
 - **Movie Discovery** — Popular, now playing, top rated, upcoming, and weekly trending movies with pagination
@@ -10,12 +41,13 @@ A Turkish-language film discovery platform built with ASP.NET Core 8 MVC. Browse
 - **Movie Details** — Poster, overview, cast, trailers (embedded YouTube), and similar movies
 - **Actor Profiles** — Actor biography, birth info, and full filmography
 - **Watchlist** — Add/remove movies; mark as watched; leave a personal rating (1–10); filter and sort
-- **Authentication** — Register, login, logout with ASP.NET Core Identity; optional email verification on registration
-- **2FA** — TOTP-based two-factor authentication via any authenticator app
-- **Account** — Profile view, password change, personal statistics (watchlist & review analytics)
 - **Reviews** — Leave a 1–10 rating and written review on any movie detail page
 - **Recommendations** — Personalized movie recommendations based on your watchlist
 - **Discover** — Filter movies by genre, year range, minimum rating, and sort order
+- **Authentication** — Register, login, logout with ASP.NET Core Identity; optional email verification on registration
+- **2FA** — TOTP-based two-factor authentication via any authenticator app
+- **Account** — Profile view, password change, email change, account deletion, personal statistics (watchlist & review analytics)
+- **Forgot Password** — Email-based password reset flow (requires SMTP configuration)
 - **Admin Panel** — User statistics dashboard and user management (delete regular users)
 
 ## Tech Stack
@@ -26,6 +58,7 @@ A Turkish-language film discovery platform built with ASP.NET Core 8 MVC. Browse
 | ORM | Entity Framework Core 8 + SQL Server |
 | Auth | ASP.NET Core Identity (TOTP 2FA) |
 | External API | TMDB (The Movie Database) v3 |
+| Email | MailKit (SMTP) |
 | Frontend | Bootstrap 5.3, Bootstrap Icons 1.11 |
 | Caching | In-memory cache (IMemoryCache) |
 
@@ -38,6 +71,7 @@ A Turkish-language film discovery platform built with ASP.NET Core 8 MVC. Browse
 - HTTPS redirect + HSTS in production
 - HttpOnly, Secure, SameSite=Lax auth cookie
 - Watchlist items are strictly scoped to the authenticated user
+- Password required to confirm sensitive actions (email change, account deletion, password reset)
 
 ## Prerequisites
 
@@ -65,14 +99,15 @@ dotnet user-secrets set "AdminCredentials:Email" "admin@example.com"
 dotnet user-secrets set "AdminCredentials:Password" "Admin@123456"
 ```
 
-**Email verification (optional)** — if `EmailSettings` is configured, users must verify their email after registration. Leave the section empty to skip verification entirely.
+**Email verification & password reset (optional)** — configure an SMTP provider to enable email features. [Mailtrap](https://mailtrap.io) works well for local testing.
 
 ```bash
-dotnet user-secrets set "EmailSettings:Host" "smtp.example.com"
-dotnet user-secrets set "EmailSettings:Port" "587"
-dotnet user-secrets set "EmailSettings:UserName" "you@example.com"
-dotnet user-secrets set "EmailSettings:Password" "<smtp-password>"
-dotnet user-secrets set "EmailSettings:FromAddress" "noreply@example.com"
+dotnet user-secrets set "EmailSettings:Host" "sandbox.smtp.mailtrap.io"
+dotnet user-secrets set "EmailSettings:Port" "2525"
+dotnet user-secrets set "EmailSettings:UseSsl" "false"
+dotnet user-secrets set "EmailSettings:UserName" "<mailtrap-username>"
+dotnet user-secrets set "EmailSettings:Password" "<mailtrap-password>"
+dotnet user-secrets set "EmailSettings:FromAddress" "noreply@moviest.dev"
 ```
 
 > In production, provide these values via environment variables or a secrets manager. The keys match the paths in `appsettings.json`.
@@ -99,7 +134,7 @@ Navigate to `https://localhost:7062`.
 Moviest/
 ├── Controllers/         # MVC controllers
 ├── Models/              # View models & API response models
-├── Services/            # TMDB API service (IMovieService)
+├── Services/            # TMDB API service, email sender
 ├── Data/                # DbContext, seed data, EF migrations
 ├── Middleware/          # Security headers middleware
 ├── Constants/           # Roles, config keys, TMDB endpoint paths
@@ -109,6 +144,7 @@ Moviest/
 │   ├── Watchlist/       # Watchlist page
 │   ├── Account/         # Auth & profile pages
 │   └── Admin/           # Admin pages
+├── docs/screenshots/    # README screenshots
 └── wwwroot/             # Static assets (CSS, JS, Bootstrap)
 ```
 
@@ -123,6 +159,7 @@ Moviest/
 | `AdminCredentials:Password` | Password for the seeded admin account |
 | `EmailSettings:Host` | SMTP server hostname |
 | `EmailSettings:Port` | SMTP port (default: `587`) |
+| `EmailSettings:UseSsl` | Use STARTTLS (default: `true`) |
 | `EmailSettings:UserName` | SMTP username |
 | `EmailSettings:Password` | SMTP password |
 | `EmailSettings:FromAddress` | Sender address for outgoing email |
