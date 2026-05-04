@@ -21,6 +21,7 @@ namespace Moviest.Controllers
             _context = context;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var allUsers = await _userManager.Users.AsNoTracking().ToListAsync();
@@ -37,6 +38,7 @@ namespace Moviest.Controllers
             return View(viewModel);
         }
 
+        [HttpGet]
         public async Task<IActionResult> UserList()
         {
             var currentAdminUserName = User.Identity?.Name;
@@ -80,10 +82,6 @@ namespace Moviest.Controllers
                 TempData[Error] = "Diğer adminleri silemezsiniz!";
                 return RedirectToAction("UserList");
             }
-
-            var watchlistItems = _context.WatchlistItems.Where(w => w.UserId == id);
-            _context.WatchlistItems.RemoveRange(watchlistItems);
-            await _context.SaveChangesAsync();
 
             await _userManager.DeleteAsync(user);
             TempData[Success] = $"{user.UserName} başarıyla silindi.";

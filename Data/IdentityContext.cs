@@ -21,6 +21,12 @@ namespace Moviest.Data
                 entity.Property(w => w.MovieTitle).HasMaxLength(400);
                 entity.Property(w => w.MoviePoster).HasMaxLength(200);
                 entity.Property(w => w.MovieYear).HasMaxLength(10);
+
+                entity.HasOne<IdentityUser>()
+                      .WithMany()
+                      .HasForeignKey(w => w.UserId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }
