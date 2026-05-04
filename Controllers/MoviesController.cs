@@ -17,6 +17,7 @@ namespace Moviest.Controllers
             _movieService = movieService;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index(int page = 1)
         {
             page = Math.Max(1, page);
@@ -29,6 +30,7 @@ namespace Moviest.Controllers
             return View(movies.Movies);
         }
 
+        [HttpGet]
         public async Task<IActionResult> NowPlaying(int page = 1)
         {
             page = Math.Max(1, page);
@@ -41,6 +43,7 @@ namespace Moviest.Controllers
             return View(movies.Movies);
         }
 
+        [HttpGet]
         public async Task<IActionResult> TopRatedMovies(int page = 1)
         {
             page = Math.Max(1, page);
@@ -53,6 +56,7 @@ namespace Moviest.Controllers
             return View(movies.Movies);
         }
 
+        [HttpGet]
         public async Task<IActionResult> UpcomingMovies(int page = 1)
         {
             page = Math.Max(1, page);
@@ -65,6 +69,7 @@ namespace Moviest.Controllers
             return View(movies.Movies);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Trending(int page = 1)
         {
             page = Math.Max(1, page);
@@ -77,6 +82,7 @@ namespace Moviest.Controllers
             return View(movies.Movies);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
             var trailersTask = TryGetOrDefaultAsync(() => _movieService.GetTrailer(id), new List<Video>());
@@ -103,6 +109,7 @@ namespace Moviest.Controllers
             return View(movieDetails);
         }
 
+        [HttpGet]
         public async Task<IActionResult> ActorDetails(int id)
         {
             var actorTask = _movieService.GetActorDetails(id);
@@ -118,12 +125,14 @@ namespace Moviest.Controllers
             return View(actorViewModel);
         }
 
+        [HttpGet]
         public async Task<IActionResult> Genres()
         {
             var genres = await _movieService.GetGenres();
             return View(genres);
         }
 
+        [HttpGet]
         public async Task<IActionResult> MoviesByGenre(int id, int page = 1)
         {
             page = Math.Max(1, page);

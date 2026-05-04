@@ -30,6 +30,7 @@ namespace Moviest.Controllers
             _movieService = movieService;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index(string? query, string status = "all", string sortBy = "recent")
         {
             var userId = _userManager.GetUserId(User);
