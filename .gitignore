@@ -1,73 +1,62 @@
-appsettings.json
-appsettings.Development.json
-userDatabase.db
-
-wwwroot/lib/
-
-## Windows işletim sistemi dosyaları
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-## Visual Studio dosyaları
-.vs/
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-## Build sonuçları
+## Build output
 bin/
 obj/
 *.dll
 *.pdb
 *.exe
 *.appx
-*.dbmdl
-*.log
-*.jfm
 
-## Paket yönetim dosyaları
-node_modules/
-bower_components/
+## Secrets & environment-specific config (use dotnet user-secrets for local dev)
+appsettings.Development.json
+appsettings.Production.json
+appsettings.*.json
 
-## ASP.NET yayınlama dosyaları
+## Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+## ASP.NET publish profiles
 *.publishsettings
 *.pubxml
 *.pubxml.user
 
-## Geliştirme araçları dosyaları
-project.lock.json
-project.fragment.lock.json
-artifacts/
-.claude/
-
-## Log ve hata raporlama dosyaları
-*.stackdump
-*.log
-*.dmp
-
-## Resharper ve benzeri araçların dosyaları
-_ReSharper*/
-*.DotSettings.user
-
-## Web yapılandırma dosyaları
-appsettings.json
-appsettings.*.json
-web.config
-web.*.config
-
-## Temp dosyalar
-*.tmp
-*.temp
-*.cache
-
-## Paket yönetimi için üretilen dosyalar
+## Package management
 packages/
+node_modules/
+bower_components/
 *.nupkg
 *.nuspec
 
-## Geriye dönük uyumluluk dosyaları
-*.csproj.user
-*.vbproj.user
+## Logs & diagnostics
+*.log
+*.stackdump
+*.dmp
+
+## OS-specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+## Tools
+_ReSharper*/
+*.DotSettings.user
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+## Local static lib cache (restored by npm/bower; not relevant here)
+wwwroot/lib/
+
+## Claude Code internal directory
+.claude/
+
+## Temp
+*.tmp
+*.temp
+*.cache
+*.dbmdl
+*.jfm
