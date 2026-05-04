@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Moviest.Data;
 using Moviest.Models;
 using Moviest.Services;
+using System.Security.Claims;
 
 namespace Moviest.Controllers
 {
@@ -11,10 +14,12 @@ namespace Moviest.Controllers
     public class MoviesController : Controller
     {
         private readonly IMovieService _movieService;
+        private readonly IdentityContext _context;
 
-        public MoviesController(IMovieService movieService)
+        public MoviesController(IMovieService movieService, IdentityContext context)
         {
             _movieService = movieService;
+            _context = context;
         }
 
         [HttpGet]
@@ -105,6 +110,17 @@ namespace Moviest.Controllers
             movieDetails.Videos = await trailersTask;
             movieDetails.SimilarMovies = await similarTask;
             movieDetails.Cast = await castTask;
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var reviews = await _context.Reviews
+                .Where(r => r.MovieId == id)
+                .OrderByDescending(r => r.CreatedAt)
+                .AsNoTracking()
+                .ToListAsync();
+
+            ViewBag.UserReview = reviews.FirstOrDefault(r => r.UserId == userId);
+            ViewBag.OtherReviews = reviews.Where(r => r.UserId != userId).ToList();
+            ViewBag.ReviewCount = reviews.Count;
 
             return View(movieDetails);
         }

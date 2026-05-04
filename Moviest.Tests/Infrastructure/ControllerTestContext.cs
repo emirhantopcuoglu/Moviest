@@ -36,5 +36,12 @@ internal static class ControllerTestContext
         return new ClaimsPrincipal(identity);
     }
 
+    public static T WithAuthenticatedUser<T>(this T controller, string userId = "user-1", string userName = "tester")
+        where T : Controller
+    {
+        AttachHttpContext(controller, CreateAuthenticatedUser(userId, userName));
+        return controller;
+    }
+
     private static ClaimsPrincipal CreateAnonymousUser() => new(new ClaimsIdentity());
 }

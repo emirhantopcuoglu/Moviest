@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moviest.Controllers;
+using Moviest.Data;
 using Moviest.Models;
 using Moviest.Tests.Infrastructure;
 
@@ -7,6 +9,11 @@ namespace Moviest.Tests.Controllers;
 
 public class MoviesControllerTests
 {
+    private static IdentityContext CreateContext() =>
+        new(new DbContextOptionsBuilder<IdentityContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options);
+
     [Fact]
     public async Task Details_WhenMainMovieCallFails_Returns503()
     {
@@ -15,7 +22,9 @@ public class MoviesControllerTests
             GetMovieDetailsHandler = _ => throw new HttpRequestException("tmdb down")
         };
 
-        var controller = new MoviesController(movieService);
+        using var ctx = CreateContext();
+        var controller = new MoviesController(movieService, ctx)
+            .WithAuthenticatedUser();
 
         var result = await controller.Details(42);
 
@@ -43,7 +52,9 @@ public class MoviesControllerTests
             GetMovieCreditsHandler = _ => throw new HttpRequestException("credits down")
         };
 
-        var controller = new MoviesController(movieService);
+        using var ctx = CreateContext();
+        var controller = new MoviesController(movieService, ctx)
+            .WithAuthenticatedUser();
 
         var result = await controller.Details(42);
 
@@ -70,7 +81,9 @@ public class MoviesControllerTests
             ]
         });
 
-        var controller = new MoviesController(movieService);
+        using var ctx = CreateContext();
+        var controller = new MoviesController(movieService, ctx)
+            .WithAuthenticatedUser();
 
         var result = await controller.Search("test", 1, "rating_desc", 7.0);
 

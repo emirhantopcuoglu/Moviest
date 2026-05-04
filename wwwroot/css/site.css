@@ -489,6 +489,60 @@ a:hover{color:var(--accent-dim)}
 .toast-success i{color:var(--success)}
 .toast-error i{color:var(--danger)}
 
+/* ---- Reviews ---- */
+.review-count-badge{
+  background:var(--accent-light);color:var(--accent);
+  border:1px solid var(--accent-border);border-radius:20px;
+  font-size:0.72rem;font-weight:700;padding:1px 9px;
+}
+.review-form-card{
+  background:var(--bg-surface);border:1px solid var(--border-hover);
+  border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1.25rem;
+}
+.review-form-row{display:flex;gap:1rem;align-items:flex-start}
+.review-textarea{resize:vertical;min-height:80px}
+.review-rating-col{display:flex;flex-direction:column;width:130px;flex-shrink:0}
+.review-rating-select{
+  background:var(--bg-input)!important;border:1px solid var(--border-hover)!important;
+  color:var(--text-primary)!important;border-radius:var(--radius-sm)!important;
+  font-size:0.85rem;padding:8px 10px;font-family:var(--font);cursor:pointer;
+}
+.review-rating-select:focus{border-color:var(--accent)!important;outline:none}
+.review-list{display:flex;flex-direction:column;gap:0.75rem}
+.review-card{
+  background:var(--bg-surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:1rem 1.25rem;
+}
+.review-card-own{
+  border-color:var(--accent-border);background:rgba(232,185,35,0.04);
+}
+.review-card-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:0.65rem;flex-wrap:wrap;
+}
+.review-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--accent-light);border:1px solid var(--accent-border);
+  color:var(--accent);font-weight:800;font-size:0.85rem;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.review-username{font-size:0.84rem;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:6px}
+.review-own-tag{
+  background:var(--accent);color:#000;font-size:0.65rem;font-weight:800;
+  padding:1px 6px;border-radius:20px;letter-spacing:0.03em;
+}
+.review-date{font-size:0.72rem;color:var(--text-muted);margin-top:1px}
+.review-rating-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:0.78rem;font-weight:700;padding:3px 10px;border-radius:20px;
+}
+.review-content{
+  font-size:0.85rem;color:var(--text-secondary);line-height:1.7;margin:0;
+}
+@media(max-width:600px){
+  .review-form-row{flex-direction:column}
+  .review-rating-col{width:100%;flex-direction:row;flex-wrap:wrap;gap:8px;align-items:center}
+}
+
 /* ---- Misc ---- */
 .card-dark{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.5rem}
 .divider{height:1px;background:var(--border);margin:1.25rem 0}

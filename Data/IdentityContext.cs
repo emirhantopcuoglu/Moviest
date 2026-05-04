@@ -10,6 +10,7 @@ namespace Moviest.Data
         public IdentityContext(DbContextOptions<IdentityContext> options) : base(options) { }
 
         public DbSet<WatchlistItem> WatchlistItems { get; set; }
+        public DbSet<Review> Reviews { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -25,6 +26,20 @@ namespace Moviest.Data
                 entity.HasOne<IdentityUser>()
                       .WithMany()
                       .HasForeignKey(w => w.UserId)
+                      .IsRequired()
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            builder.Entity<Review>(entity =>
+            {
+                entity.HasIndex(r => new { r.UserId, r.MovieId }).IsUnique();
+                entity.Property(r => r.Content).HasMaxLength(1000);
+                entity.Property(r => r.MovieTitle).HasMaxLength(400);
+                entity.Property(r => r.UserName).HasMaxLength(256);
+
+                entity.HasOne<IdentityUser>()
+                      .WithMany()
+                      .HasForeignKey(r => r.UserId)
                       .IsRequired()
                       .OnDelete(DeleteBehavior.Cascade);
             });

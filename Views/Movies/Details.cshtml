@@ -123,6 +123,120 @@
     </div>
 }
 
+@{
+    var userReview = ViewBag.UserReview as Moviest.Models.Review;
+    var otherReviews = (ViewBag.OtherReviews as List<Moviest.Models.Review>) ?? new List<Moviest.Models.Review>();
+    int reviewCount = ViewBag.ReviewCount ?? 0;
+}
+
+<div class="mb-section">
+    <div class="section-title">
+        <i class="bi bi-chat-quote"></i> Yorumlar
+        @if (reviewCount > 0)
+        {
+            <span class="review-count-badge">@reviewCount</span>
+        }
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-app alert-success-app" style="margin-bottom:1rem;">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-app alert-danger-app" style="margin-bottom:1rem;">
+            <i class="bi bi-exclamation-circle-fill"></i> @TempData["Error"]
+        </div>
+    }
+
+    @if (userReview == null)
+    {
+        <div class="review-form-card">
+            <div style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.75rem;letter-spacing:0.04em;text-transform:uppercase;">
+                <i class="bi bi-pencil-square" style="color:var(--accent);"></i> Yorumunuzu Yazın
+            </div>
+            <form asp-controller="Reviews" asp-action="Add" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="MovieId" value="@Model.Id" />
+                <input type="hidden" name="MovieTitle" value="@Model.Title" />
+                <div class="review-form-row">
+                    <div style="flex:1;">
+                        <textarea name="Content" class="form-control review-textarea"
+                                  placeholder="Bu film hakkında düşüncelerinizi paylaşın..." maxlength="1000" rows="3"></textarea>
+                    </div>
+                    <div class="review-rating-col">
+                        <label class="form-label">Puanınız</label>
+                        <select name="Rating" class="form-select review-rating-select">
+                            @for (int i = 10; i >= 1; i--)
+                            {
+                                <option value="@i">@i / 10</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn-accent" style="width:100%;margin-top:8px;">
+                            <i class="bi bi-send"></i> Gönder
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    }
+    else
+    {
+        <div class="review-card review-card-own">
+            <div class="review-card-header">
+                <div class="review-avatar">@userReview.UserName[..1].ToUpper()</div>
+                <div>
+                    <div class="review-username">@userReview.UserName <span class="review-own-tag">Sen</span></div>
+                    <div class="review-date">@userReview.CreatedAt.ToString("dd MMM yyyy")</div>
+                </div>
+                <div class="review-rating-badge @GetRatingClass(userReview.Rating)">
+                    <i class="bi bi-star-fill"></i> @userReview.Rating/10
+                </div>
+                <form asp-controller="Reviews" asp-action="Delete" method="post" style="margin-left:auto;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@userReview.Id" />
+                    <button type="submit" class="btn-danger-soft" style="padding:5px 10px;font-size:0.74rem;"
+                            onclick="return confirm('Yorumunuz silinecek. Emin misiniz?')">
+                        <i class="bi bi-trash3"></i> Sil
+                    </button>
+                </form>
+            </div>
+            <p class="review-content">@userReview.Content</p>
+        </div>
+    }
+
+    @if (otherReviews.Any())
+    {
+        <div class="review-list">
+            @foreach (var review in otherReviews)
+            {
+                <div class="review-card">
+                    <div class="review-card-header">
+                        <div class="review-avatar">@review.UserName[..1].ToUpper()</div>
+                        <div>
+                            <div class="review-username">@review.UserName</div>
+                            <div class="review-date">@review.CreatedAt.ToString("dd MMM yyyy")</div>
+                        </div>
+                        <div class="review-rating-badge @GetRatingClass(review.Rating)" style="margin-left:auto;">
+                            <i class="bi bi-star-fill"></i> @review.Rating/10
+                        </div>
+                    </div>
+                    <p class="review-content">@review.Content</p>
+                </div>
+            }
+        </div>
+    }
+    else if (userReview == null)
+    {
+        <div style="text-align:center;padding:2rem 0;color:var(--text-muted);font-size:0.85rem;">
+            <i class="bi bi-chat-square" style="font-size:1.6rem;display:block;margin-bottom:0.5rem;opacity:0.4;"></i>
+            Henüz yorum yok. İlk yorumu sen yaz!
+        </div>
+    }
+</div>
+
 @functions {
     string GetRatingClass(double v) => v switch {
         >= 9 => "rating-high",
