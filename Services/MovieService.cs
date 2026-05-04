@@ -109,7 +109,7 @@ namespace Moviest.Services
 
         public async Task<List<Video>> GetTrailer(int movieId)
         {
-            var url = $"{string.Format(TmdbEndpoints.MovieVideos, movieId)}?api_key={_apiKey}";
+            var url = BuildUrl(string.Format(TmdbEndpoints.MovieVideos, movieId), string.Empty);
             var videoResponse = await GetCachedAsync(
                 $"movie:videos:{movieId}",
                 () => GetAndDeserializeAsync<VideoResponse>(url),
@@ -162,7 +162,8 @@ namespace Moviest.Services
 
             if (result == null)
             {
-                _logger.LogWarning("TMDB response could not be deserialized for url {Url}.", url);
+                _logger.LogWarning("TMDB response could not be deserialized for endpoint {Endpoint}.",
+                    response.RequestMessage?.RequestUri?.AbsolutePath);
                 throw new InvalidOperationException("TMDB yaniti islenemedi.");
             }
 
