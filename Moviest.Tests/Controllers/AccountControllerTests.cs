@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Moviest.Controllers;
 using Moviest.Data;
 using Moviest.Models;
+using Moviest.Services;
 using Moviest.Tests.Infrastructure;
 
 namespace Moviest.Tests.Controllers;
@@ -14,6 +15,8 @@ public class AccountControllerTests
         new(new DbContextOptionsBuilder<IdentityContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options);
+
+    private static IEmailSender NoOpEmailSender() => new StubEmailSender();
 
     [Fact]
     public async Task Register_WhenCreationSucceeds_RedirectsToMovies()
@@ -35,7 +38,7 @@ public class AccountControllerTests
         };
 
         using var ctx = CreateContext();
-        var controller = new AccountController(userManager, signInManager, ctx);
+        var controller = new AccountController(userManager, signInManager, ctx, NoOpEmailSender());
         ControllerTestContext.AttachHttpContext(controller);
 
         var result = await controller.Register(new RegisterViewModel
@@ -62,7 +65,7 @@ public class AccountControllerTests
         };
 
         using var ctx = CreateContext();
-        var controller = new AccountController(userManager, signInManager, ctx);
+        var controller = new AccountController(userManager, signInManager, ctx, NoOpEmailSender());
         ControllerTestContext.AttachHttpContext(controller);
 
         var result = await controller.Login(new LoginViewModel

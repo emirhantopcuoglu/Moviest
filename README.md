@@ -10,9 +10,12 @@ A Turkish-language film discovery platform built with ASP.NET Core 8 MVC. Browse
 - **Movie Details** — Poster, overview, cast, trailers (embedded YouTube), and similar movies
 - **Actor Profiles** — Actor biography, birth info, and full filmography
 - **Watchlist** — Add/remove movies; mark as watched; leave a personal rating (1–10); filter and sort
-- **Authentication** — Register, login, logout with ASP.NET Core Identity
+- **Authentication** — Register, login, logout with ASP.NET Core Identity; optional email verification on registration
 - **2FA** — TOTP-based two-factor authentication via any authenticator app
-- **Account** — Profile view, password change
+- **Account** — Profile view, password change, personal statistics (watchlist & review analytics)
+- **Reviews** — Leave a 1–10 rating and written review on any movie detail page
+- **Recommendations** — Personalized movie recommendations based on your watchlist
+- **Discover** — Filter movies by genre, year range, minimum rating, and sort order
 - **Admin Panel** — User statistics dashboard and user management (delete regular users)
 
 ## Tech Stack
@@ -62,6 +65,16 @@ dotnet user-secrets set "AdminCredentials:Email" "admin@example.com"
 dotnet user-secrets set "AdminCredentials:Password" "Admin@123456"
 ```
 
+**Email verification (optional)** — if `EmailSettings` is configured, users must verify their email after registration. Leave the section empty to skip verification entirely.
+
+```bash
+dotnet user-secrets set "EmailSettings:Host" "smtp.example.com"
+dotnet user-secrets set "EmailSettings:Port" "587"
+dotnet user-secrets set "EmailSettings:UserName" "you@example.com"
+dotnet user-secrets set "EmailSettings:Password" "<smtp-password>"
+dotnet user-secrets set "EmailSettings:FromAddress" "noreply@example.com"
+```
+
 > In production, provide these values via environment variables or a secrets manager. The keys match the paths in `appsettings.json`.
 
 ### 3. Apply database migrations
@@ -108,6 +121,12 @@ Moviest/
 | `ConnectionStrings:DefaultConnection` | SQL Server connection string |
 | `AdminCredentials:Email` | Email for the seeded admin account |
 | `AdminCredentials:Password` | Password for the seeded admin account |
+| `EmailSettings:Host` | SMTP server hostname |
+| `EmailSettings:Port` | SMTP port (default: `587`) |
+| `EmailSettings:UserName` | SMTP username |
+| `EmailSettings:Password` | SMTP password |
+| `EmailSettings:FromAddress` | Sender address for outgoing email |
+| `EmailSettings:FromName` | Sender display name (default: `Moviest`) |
 
 ## License
 

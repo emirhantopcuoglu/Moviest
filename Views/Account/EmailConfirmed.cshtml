@@ -1,0 +1,17 @@
+@{
+    ViewData["Title"] = "E-posta Doğrulandı";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card" style="text-align:center;">
+        <div style="font-size:3rem;margin-bottom:1rem;">✅</div>
+        <h1 class="auth-title">E-posta Doğrulandı</h1>
+        <p style="color:var(--text-muted);margin-bottom:1.5rem;">
+            Hesabınız başarıyla doğrulandı. Artık giriş yapabilirsiniz.
+        </p>
+        <a asp-action="Login" asp-controller="Account" class="btn-accent" style="display:inline-block;">
+            Giriş Yap
+        </a>
+    </div>
+</div>

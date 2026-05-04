@@ -15,15 +15,18 @@ namespace Moviest.Controllers
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IdentityContext _context;
+        private readonly IEmailSender _emailSender;
 
         public AccountController(
             UserManager<IdentityUser> userManager,
             SignInManager<IdentityUser> signInManager,
-            IdentityContext context)
+            IdentityContext context,
+            IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _context = context;
+            _emailSender = emailSender;
         }
 
         [AllowAnonymous]
@@ -54,6 +57,12 @@ namespace Moviest.Controllers
 
             if (result.Succeeded)
             {
+                if (_userManager.Options.SignIn.RequireConfirmedAccount)
+                {
+                    await SendConfirmationEmailAsync(user);
+                    return RedirectToAction("VerificationSent", new { email = model.Email });
+                }
+
                 await _signInManager.SignInAsync(user, isPersistent: false);
                 return RedirectToAction("Index", "Movies");
             }
@@ -230,6 +239,32 @@ namespace Moviest.Controllers
                 .Select(i => key.Substring(i * 4, Math.Min(4, key.Length - i * 4))));
         }
 
+        private async Task SendConfirmationEmailAsync(IdentityUser user)
+        {
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmUrl = Url.Action(
+                "ConfirmEmail", "Account",
+                new { userId = user.Id, token },
+                Request.Scheme)!;
+
+            var html = $"""
+                <div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;background:#111827;border-radius:12px;color:#e2e8f0;">
+                    <h2 style="color:#e8b923;margin-bottom:16px;">Moviest — E-posta Doğrulama</h2>
+                    <p style="margin-bottom:24px;">Hesabınızı doğrulamak için aşağıdaki butona tıklayın:</p>
+                    <a href="{confirmUrl}"
+                       style="display:inline-block;background:#e8b923;color:#000;font-weight:700;
+                              padding:12px 28px;border-radius:8px;text-decoration:none;font-size:15px;">
+                        E-postamı Doğrula
+                    </a>
+                    <p style="margin-top:24px;font-size:12px;color:#4f5b72;">
+                        Bu bağlantı 24 saat geçerlidir. Eğer bu isteği siz yapmadıysanız bu e-postayı yok sayabilirsiniz.
+                    </p>
+                </div>
+                """;
+
+            await _emailSender.SendAsync(user.Email!, "Moviest — E-postanızı Doğrulayın", html);
+        }
+
         private static string GenerateQrCodeDataUrl(string totpUri)
         {
             using var qrGenerator = new QRCodeGenerator();
@@ -333,6 +368,29 @@ namespace Moviest.Controllers
             };
 
             return View(vm);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public IActionResult VerificationSent(string email)
+        {
+            ViewBag.Email = email;
+            return View();
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(token))
+                return BadRequest();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound();
+
+            var result = await _userManager.ConfirmEmailAsync(user, token);
+            return View(result.Succeeded ? "EmailConfirmed" : "EmailConfirmFailed");
         }
 
         [AllowAnonymous]

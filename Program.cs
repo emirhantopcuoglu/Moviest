@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Moviest.Data;
 using Moviest.Middleware;
+using Moviest.Models;
 using Moviest.Services;
 using System.Net.Http.Headers;
 using System.Threading.RateLimiting;
@@ -11,6 +12,11 @@ const int MinPasswordLength = 8;
 const int SessionDurationDays = 7;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// ── Email ─────────────────────────────────────────────────
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
+var emailSettings = builder.Configuration.GetSection("EmailSettings").Get<EmailSettings>() ?? new EmailSettings();
 
 // ── Database ──────────────────────────────────────────────
 builder.Services.AddDbContext<IdentityContext>(options =>
@@ -26,6 +32,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.Password.RequiredLength = MinPasswordLength;
 
     options.User.RequireUniqueEmail = true;
+    options.SignIn.RequireConfirmedAccount = emailSettings.IsConfigured;
 
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
     options.Lockout.MaxFailedAccessAttempts = 5;

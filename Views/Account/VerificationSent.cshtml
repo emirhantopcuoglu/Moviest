@@ -1,0 +1,25 @@
+@{
+    ViewData["Title"] = "E-posta Doğrulama";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-card" style="text-align:center;">
+        <div style="font-size:3rem;margin-bottom:1rem;">📧</div>
+        <h1 class="auth-title">E-postanızı Doğrulayın</h1>
+        <p style="color:var(--text-muted);margin-bottom:0.5rem;">
+            Doğrulama bağlantısı şu adrese gönderildi:
+        </p>
+        <p style="color:var(--accent);font-weight:600;margin-bottom:1.5rem;">@ViewBag.Email</p>
+        <p style="color:var(--text-muted);font-size:0.9rem;">
+            Gelen kutunuzu kontrol edin ve e-postadaki bağlantıya tıklayarak hesabınızı etkinleştirin.
+            Bağlantı 24 saat geçerlidir.
+        </p>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-top:1rem;">
+            E-posta gelmezse spam/junk klasörünü de kontrol edin.
+        </p>
+        <a asp-action="Login" asp-controller="Account" class="btn-accent" style="margin-top:1.5rem;display:inline-block;">
+            Giriş Sayfasına Dön
+        </a>
+    </div>
+</div>
